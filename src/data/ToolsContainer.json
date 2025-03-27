@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "title": "XSS-Scanner",
+            "description": "XSS Scanner detects and prevents cross-site scripting (XSS) vulnerabilities by identifying unsafe user inputs that could be exploited for attacks.",
+            "subtool": "true",
+            "subtools": [
+                {
+                    "title": "Reflected Xss",
+                    "description": "Reflected XSS occurs when an attacker injects malicious scripts into input that is immediately echoed by the web server, enabling the execution of unauthorized code in a user's browser"
+                },
+                {
+                    "title": "DOM-Based Xss",
+                    "description": "The vulnerability exists in the client-side JavaScript rather than the server. The script modifies the page dynamically (e.g., manipulating the DOM with document.write or innerHTML)."
+                }
+            ]
+        },
+        {
+            "title": "SQL Injection Scanner",
+            "description": "SQL Injection Scanner helps detect and prevent SQL injection attacks by identifying unsafe user inputs that could be used to manipulate database queries.",
+            "subtool": "false"
+        },
+        {
+            "title": "Search-Engine-Scanner",
+            "description": "Search Engine Scanner identifies security risks and sensitive data exposure in search engine results, helping protect your online presence",
+            "subtool": "true",
+            "subtools": [
+                {
+                    "title": "Shodan Search Engine",
+                    "description": "Shodan is a search engine that scans and indexes internet-connected devices, revealing their configurations, exposed services, and potential vulnerabilities."
+                },
+                {
+                    "title": "Censys Search Engine",
+                    "description": "Censys is an internet search engine that continuously scans and indexes global devices and services, helping security researchers and network admins identify vulnerabilities and monitor online trends."
+                }
+            ]
+        },
+        {
+            "title": "WAF Detector",
+            "description": "WAF Detector analyzes web traffic to identify active Web Application Firewalls, helping assess security measures and potential bypass techniques",
+            "subtool": "false"
+        },
+        {
+            "title": "Subdomain-Reconnaissance",
+            "description": "Subdomain Recon identifies hidden subdomains of a target domain, helping uncover attack surfaces and potential security risks",
+            "subtool": "false"
+        },
+        {
+            "title": "Hidden-Files-Reconnaissance",
+            "description": "Hidden Files/Directory Reconnaissance identifies unlisted files and directories on a web server, helping uncover potential security risks and sensitive data exposure.",
+            "subtool": "false"
+        }
+    ]
+}

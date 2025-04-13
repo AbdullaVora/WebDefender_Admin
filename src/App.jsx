@@ -92,6 +92,7 @@ import Scan from "./pages/Dashboard/Scan";
 import NewScan from "./pages/Dashboard/NewScan";
 import Account from "./pages/Dashboard/Account";
 import PricingPlan from "./pages/Dashboard/PricingPlan";
+import GoogleHacking from "./pages/newScans/GoogleHacking";
 
 function App() {
   return (
@@ -183,10 +184,21 @@ function App() {
               </Layout>
             }
           />
-        </Route>
 
-        {/* 404 Not Found */}
-        <Route path="*" element={<NotFound />} />
+          {/* newScans */}
+          <Route path="/google-hacking"
+            element={
+              <Layout>
+                <GoogleHacking />
+              </Layout>
+            }
+          />
+          </Route>
+
+
+
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

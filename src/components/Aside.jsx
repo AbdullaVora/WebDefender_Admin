@@ -167,7 +167,7 @@ const Aside = ({ isCollapsed }) => {
         }`}
     >
       <div className={`flex flex-col ${isCollapsed ? "items-center px-2" : "px-5"}`}>
-        <Link to="/tools">
+        <Link to="/new-scan">
           <button
             type="button"
             className={`bg-[#00FFFF] flex cursor-pointer items-center justify-center rounded-[5px] font-bold text-black transition-all ${isCollapsed ? "w-10 h-10 p-0 mt-5" : "w-[170px] py-[6px] mt-5"

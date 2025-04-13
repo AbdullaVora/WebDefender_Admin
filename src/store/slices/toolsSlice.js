@@ -1,6 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiInstance from "../../api/instance";
 
+// const initialState = {
+//     loading: false,
+//     error: null,
+//     tools: [],
+//     response: [],
+//     scanResults: [],
+//     status: false,
+//     logs: [],
+// };
+
 const initialState = {
     loading: false,
     error: null,
@@ -9,6 +19,8 @@ const initialState = {
     scanResults: [],
     status: false,
     logs: [],
+    currentScanType: null,
+    // estimatedDuration: 300000, // Default 5 minutes
 };
 
 // POST request to start the subdomain scan
@@ -16,7 +28,7 @@ export const scanStart = createAsyncThunk(
     "/tools/subDomain",
     async ({ domain, path, custom }, { rejectWithValue }) => {
         try {
-            console.log("Starting scan for URL: ", domain, path);
+            console.log("Starting scan for URL: ", domain, path, custom);
             const response = await apiInstance.post(`/api/tools/${path}`, { domain: domain, custom: custom }, { headers: { 'Content-Type': 'application/json' } });
             console.log("Scan started: ", response.data);
             return response.data;
@@ -53,6 +65,15 @@ const toolsSlice = createSlice({
             } else {
                 state.scanResults.push({ domain, scans: [scan] });
             }
+        },
+        setScanType: (state, action) => {
+            state.currentScanType = action.payload.type;
+            // Set different estimates based on scan type
+            // state.estimatedDuration =
+            //     action.payload.type === 'DOM-BasedXss' ? 300000 : // 5 mins
+            //         action.payload.type === 'Subdomain-Reconnaissance' ? 420000 : // 7 mins
+            //             180000; // 3 mins default
+
         }
     },
     extraReducers: (builder) => {
@@ -67,7 +88,7 @@ const toolsSlice = createSlice({
                 state.loading = false;
                 state.response.push(action.payload);
                 state.status = true;
-                state.scanResults.push(action.payload.results)
+                state.scanResults.push(action.payload)
             })
             .addCase(scanStart.rejected, (state, action) => {
                 state.loading = false;
@@ -99,5 +120,5 @@ const toolsSlice = createSlice({
     },
 });
 
-export const { updateScanResults } = toolsSlice.actions;
+export const { updateScanResults, setScanType } = toolsSlice.actions;
 export default toolsSlice.reducer;

@@ -33,6 +33,28 @@ const Result_Table = ({ sortedResults, scanType }) => {
                             <th className="px-4 py-3">Status Code </th>
                         </>
                     )}
+                    {scanType === "WAFDetector" && (
+                        <>
+                            <th className="px-4 py-3">URL</th>
+                            <th className="px-4 py-3">IP Address</th>
+                            <th className="px-4 py-3">WAF</th>
+                            <th className="px-4 py-3">ISP</th>
+                            <th className="px-4 py-3">Protection</th>
+                            <th className="px-4 py-3">Server</th>
+                            <th className="px-4 py-3">Location</th>
+                            <th className="px-4 py-3">Latitude</th>
+                            <th className="px-4 py-3">Longitude</th>
+                            <th className="px-4 py-3">Status</th>
+                        </>
+                    )}
+                    {scanType === "DOM-BasedXss" && (
+                        <>
+                            <th className="px-4 py-3">URL</th>
+                            <th className="px-4 py-3">Parameter</th>
+                            <th className="px-4 py-3">Payload</th>
+                            <th className="px-4 py-3">Status</th>
+                        </>
+                    )}
                 </tr>
             </thead>
             <tbody>
@@ -67,7 +89,7 @@ const Result_Table = ({ sortedResults, scanType }) => {
                                     </td>
                                 </tr>
                             )
-                        )}
+                            )}
                         {scanType === "Hidden-Files-Reconnaissance" &&
                             sortedResults.map((item, index) => (
                                 <tr key={index} className="border-b border-[#4C566A] hover:bg-[#1E293B]">
@@ -77,11 +99,36 @@ const Result_Table = ({ sortedResults, scanType }) => {
                                     <td className="px-4 py-3">{item.content_type}</td>
                                     <td className="px-4 py-3">{item.content_length}</td>
                                     <td className="px-4 py-3">{item.status}</td>
-                                    <td className="px-4 py-3">
-                                        {item.databases && item.databases.length > 0 ? item.databases.join(", ") : "N/A"}
-                                    </td>
                                 </tr>
                             )
+                            )}
+                        {scanType === "WAFDetector" && (
+                            sortedResults.map((item, index) => (
+                                <tr key={index} className="border-b border-[#4C566A] hover:bg-[#1E293B]">
+                                    <td className="px-4 py-3">{index + 1}</td>
+                                    <td className="px-4 py-3">{item.url}</td>
+                                    <td className="px-4 py-3">{item.ipAddress}</td>
+                                    <td className="px-4 py-3">{item.WAF}</td>
+                                    <td className="px-4 py-3">{item.ISP}</td>
+                                    <td className="px-4 py-3">{item.protection}</td>
+                                    <td className="px-4 py-3">{item.server}</td>
+                                    <td className="px-4 py-3">{item.Location}</td>
+                                    <td className="px-4 py-3">{item.Latitude}</td>
+                                    <td className="px-4 py-3">{item.Longitude}</td>
+                                    <td className="px-4 py-3">{item.status}</td>
+                                </tr>
+                            ))
+                        )}
+                        {scanType === "DOM-BasedXss" && (
+                            sortedResults.map((item, index) => (
+                                <tr key={index} className="border-b border-[#4C566A] hover:bg-[#1E293B]">
+                                    <td className="px-4 py-3">{index + 1}</td>
+                                    <td className="px-4 py-3">{item.url}</td>
+                                    <td className="px-4 py-3">{item.parameter}</td>
+                                    <td className="px-4 py-3">{item.payload}</td>
+                                    <td className="px-4 py-3">{item.status}</td>
+                                </tr>
+                            ))
                         )}
                     </>
                 )}

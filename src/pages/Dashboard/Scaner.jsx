@@ -5,13 +5,15 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchResult, scanStart } from "../../store/slices/toolsSlice";
+import { fetchResult, scanStart, setScanType } from "../../store/slices/toolsSlice";
 import Result_Table from "../../components/Result_Table";
 import Custom_Selection from "../../components/Custom_Selection";
+import SmartLoader from "../../components/Loader/SmartLoader";
+
 
 const Scaner = () => {
     const dispatch = useDispatch();
-    const { scanResults, status } = useSelector((state) => state.tools);
+    const { scanResults, loading, status } = useSelector((state) => state.tools);
 
     console.log("scanResults: ", scanResults)
 
@@ -42,7 +44,7 @@ const Scaner = () => {
 
     useEffect(() => {
         let interval;
-        if (isLoading) {
+        if (loading) {
             setProgress(0);
             interval = setInterval(() => {
                 setProgress((prev) => (prev < 100 ? prev + 10 : 100));
@@ -52,7 +54,7 @@ const Scaner = () => {
             setProgress(100);
         }
         return () => clearInterval(interval);
-    }, [isLoading]);
+    }, [loading]);
 
     useEffect(() => {
         if (Array.isArray(scanResults)) {
@@ -69,7 +71,7 @@ const Scaner = () => {
         setTargetUrl("");
         setProgress(0);
         setToggleBtn(false);
-        setIsLoading(false);
+        // setIsLoading(false);
         setEnabled(false);
         setCustomValues({
             proxy: "No",
@@ -130,21 +132,21 @@ const Scaner = () => {
             alert("Please enter a target URL or upload a URL file");
             return;
         }
-    
-        setIsLoading(true);
+
+        // setIsLoading(true);
         setToggleBtn(true);
         setProgress(0);
-    
+
         // Prepare the base scan payload
         const basePayload = {
             domain: targetUrl,
             path: cleanedPath,
         };
-    
+
         // Add custom values if enabled
         if (enabled) {
             const customPayload = {};
-    
+
             // Common custom values for all scan types
             if (customValues.proxy === "Yes") {
                 customPayload.proxy = customValues.proxyValue;
@@ -155,7 +157,7 @@ const Scaner = () => {
             if (customValues.payloadsFileContent) {
                 customPayload.payloads = customValues.payloadsFileContent;
             }
-    
+
             // Scan-specific custom values
             switch (cleanedPath) {
                 case "SQLInjectionScanner":
@@ -166,7 +168,7 @@ const Scaner = () => {
                         customPayload.techniques = customValues.techniques;
                     }
                     break;
-    
+
                 case "Hidden-Files-Reconnaissance":
                     if (customValues.threads) {
                         customPayload.threads = customValues.threads;
@@ -184,39 +186,42 @@ const Scaner = () => {
                         customPayload.extensions = customValues.extensions;
                     }
                     break;
-    
+
                 // Add more cases for other scan types if needed
                 default:
                     break;
             }
-    
+
             basePayload.custom = customPayload;
         }
-    
-        console.log("Scan Payload:", basePayload);
-    
+
+        // console.log("Scan Payload:", basePayload);
+
+        // Dispatch scan type first
+        dispatch(setScanType({ type: cleanedPath })); // Just set the scan type
+
         // Dispatch the scanStart action with the payload
         dispatch(scanStart(basePayload))
             .then((response) => {
                 if (response.payload?.status === 200) {
-                    setIsLoading(false);
+                    // setIsLoading(false);
                     setToggleBtn(false);
-                    console.log("Scan completed successfully.");
+                    // console.log("Scan completed successfully.");
                 } else {
-                    setIsLoading(false);
+                    // setIsLoading(false);
                     setToggleBtn(false);
                     console.error("Error: Invalid response status", response.payload?.status);
                 }
             })
             .catch((error) => {
-                setIsLoading(false);
+                // setIsLoading(false);
                 setToggleBtn(false);
                 console.error("Error in scan request:", error);
             });
     };
 
     const handleStopScan = () => {
-        setIsLoading(false);
+        // setIsLoading(false);
         setToggleBtn(false);
         setProgress(0);
         dispatch({ type: "tools/addLog", payload: "Scan stopped by user." });
@@ -226,7 +231,7 @@ const Scaner = () => {
         setTargetUrl("");
         setProgress(0);
         setToggleBtn(false);
-        setIsLoading(false);
+        // setIsLoading(false);
         setData([]);
         setCustomValues({
             proxy: "No",
@@ -242,131 +247,523 @@ const Scaner = () => {
         setSortCriteria(e.target.value);
     };
 
+    // backup 29/03
+    // const filteredResults = (() => {
+    //     // Check if data exists and is an array
+    //     if (!data || !Array.isArray(data) || data.length === 0) {
+    //         // console.log("DATA IS EMPTY OR NOT AN ARRAY");
+    //         return [];
+    //     }
+
+    //     // Create a flattened result array
+    //     const results = [];
+
+    //     // Process each item in data
+    //     data.forEach((item, index) => {
+    //         // console.log(`PROCESSING ITEM ${index}:`, item);
+
+    //         // Skip null or undefined items
+    //         if (!item) return;
+
+    //         // Handle SQL Injection Scanner results
+    //         if (item.url) {
+    //             // If there's a URL but vulnerable_parameters is null or empty, add a "secure" result
+    //             if (!item.vulnerable_parameters ||
+    //                 (Array.isArray(item.vulnerable_parameters) && item.vulnerable_parameters.length === 0)) {
+
+    //                 const resultItem = {
+    //                     type: "sql_injection_secure",
+    //                     url: item.url,
+    //                     status: "Secure",
+    //                     details: "No SQL injection vulnerabilities detected"
+    //                 };
+
+    //                 // Only add if it matches the filter
+    //                 if (!filterText ||
+    //                     Object.values(resultItem).some(
+    //                         value => typeof value === "string" && value.includes(filterText)
+    //                     )) {
+    //                     results.push(resultItem);
+    //                 }
+    //             }
+    //         }
+
+    //         // Find any subdomain data
+    //         if (typeof item === 'object') {
+    //             // Extract subdomains (try different possible paths)
+    //             const subdomains = item.subdomains ||
+    //                 (item.data && item.data.subdomains) ||
+    //                 [];
+
+    //             const liveSubdomains = item.live_subdomains ||
+    //                 (item.data && item.data.live_subdomains) ||
+    //                 [];
+
+    //             // If we found subdomains, process them
+    //             if (Array.isArray(subdomains) && subdomains.length > 0) {
+    //                 // console.log(`FOUND ${subdomains.length} SUBDOMAINS`);
+
+    //                 subdomains.forEach(subdomain => {
+    //                     // Skip null or undefined subdomains
+    //                     if (!subdomain) return;
+
+    //                     const liveSub = Array.isArray(liveSubdomains) ? liveSubdomains.find(
+    //                         live => live && live.subdomain === subdomain
+    //                     ) : null;
+
+    //                     const resultItem = {
+    //                         type: "subdomain",
+    //                         domain: item.domain || "unknown",
+    //                         subdomain,
+    //                         ip: liveSub ? liveSub.ip : "--",
+    //                         status: liveSub ? "200" : "404",
+    //                     };
+
+    //                     // Only add if it matches the filter
+    //                     if (!filterText ||
+    //                         Object.values(resultItem).some(
+    //                             value => typeof value === "string" && value.includes(filterText)
+    //                         )) {
+    //                         results.push(resultItem);
+    //                     }
+    //                 });
+    //             }
+
+    //             // Extract vulnerable parameters (try different possible paths)
+    //             const vulnerableParams = item.vulnerable_parameters ||
+    //                 (item.data && item.data.vulnerable_parameters) ||
+    //                 [];
+
+    //             const payloads = item.payloads ||
+    //                 (item.data && item.data.payloads) ||
+    //                 [];
+
+    //             // If we found vulnerable parameters, process them
+    //             if (Array.isArray(vulnerableParams) && vulnerableParams.length > 0) {
+    //                 // console.log(`FOUND ${vulnerableParams.length} VULNERABLE PARAMETERS`);
+
+    //                 vulnerableParams.forEach((param, idx) => {
+    //                     // Skip null or undefined parameters
+    //                     if (!param) return;
+
+    //                     const resultItem = {
+    //                         type: "sql_injection",
+    //                         url: item.url || "unknown",
+    //                         parameter: param,
+    //                         payload: payloads[idx] || "N/A",
+    //                         databases: item.databases || [],
+    //                     };
+
+    //                     // Only add if it matches the filter
+    //                     if (!filterText ||
+    //                         Object.values(resultItem).some(
+    //                             value => (typeof value === "string" || Array.isArray(value)) &&
+    //                                 JSON.stringify(value).includes(filterText)
+    //                         )) {
+    //                         results.push(resultItem);
+    //                     }
+    //                 });
+    //             }
+
+    //             // If we couldn't find expected properties, log all available properties
+    //             if (!subdomains.length && (vulnerableParams === null || vulnerableParams.length === 0)) {
+    //                 console.log(`NO RECOGNIZED DATA IN ITEM ${index}. AVAILABLE KEYS:`, Object.keys(item));
+    //             }
+    //         }
+    //     });
+
+    //     // console.log(`EXTRACTED ${results.length} RESULTS:`, results);
+    //     return results;
+    // })();
+
+
     const filteredResults = (() => {
         // Check if data exists and is an array
         if (!data || !Array.isArray(data) || data.length === 0) {
-            console.log("DATA IS EMPTY OR NOT AN ARRAY");
             return [];
         }
 
-        // Create a flattened result array
         const results = [];
+        console.log("results: ", results)
 
         // Process each item in data
-        data.forEach((item, index) => {
-            console.log(`PROCESSING ITEM ${index}:`, item);
-
-            // Skip null or undefined items
+        data.forEach((item) => {
             if (!item) return;
 
-            // Handle SQL Injection Scanner results
-            if (item.url) {
-                // If there's a URL but vulnerable_parameters is null or empty, add a "secure" result
-                if (!item.vulnerable_parameters ||
-                    (Array.isArray(item.vulnerable_parameters) && item.vulnerable_parameters.length === 0)) {
+            // Determine scan type from item
+            const scanType = item.scanType ||
+                (item.data && item.data.scanType)
 
-                    const resultItem = {
-                        type: "sql_injection_secure",
-                        url: item.url,
-                        status: "Secure",
-                        details: "No SQL injection vulnerabilities detected"
-                    };
+            // console.log("scantype: ", scanType)
 
-                    // Only add if it matches the filter
-                    if (!filterText ||
-                        Object.values(resultItem).some(
-                            value => typeof value === "string" && value.includes(filterText)
-                        )) {
-                        results.push(resultItem);
+            // let resultItem = [];
+            switch (scanType) {
+                // case 'Hidden-Files-Reconnaissance':
+                //     // Your data is in the format [{ scanType, scan_id, results: [...] }]
+                //     const scanData = Array.isArray(item) ? item[0] : item;
+                //     console.log("scanData: ", scanData)
+                //     // Check if we have results
+                //     // if (scanData && scanData.results && Array.isArray(scanData.results)) {
+                //     //     // Process each result from the results array
+                //     //     scanData.results.forEach(resultData => {
+                //     //         // console.log("resultData: ", resultData);
+
+                //     //         if (resultData.results) {
+                //     //             resultItem = resultData.results.map((data) =>
+                //     //                 data.results.map((data2) => ({
+                //     //                     type: "hidden_file",
+                //     //                     url: data2.url || "unknown",
+                //     //                     status: data2.status || "unknown",
+                //     //                     redirect: data2.redirect_to || "none",
+                //     //                     content_type: data2.content_type || "unknown",
+                //     //                     content_length: data2.content_length || "unknown"
+                //     //                 }))
+                //     //             )// Flatten the array in case of nested results
+                //     //         } else {
+                //     //             resultItem.push({
+                //     //                 type: "hidden_file",
+                //     //                 url: resultData.url || "unknown",
+                //     //                 status: resultData.status || "unknown",
+                //     //                 redirect: resultData.redirect_to || "none",
+                //     //                 content_type: resultData.content_type || "unknown",
+                //     //                 content_length: resultData.content_length || "unknown"
+                //     //             });
+                //     //         }
+
+
+                //     //         if (!filterText || Object.values(resultItem).some(
+                //     //             value => value.toString().toLowerCase().includes(filterText.toLowerCase())
+                //     //         )) {
+                //     //             results.push(resultItem);
+                //     //         }
+                //     //     });
+                //     // }
+
+                //     if (scanData && scanData.results && Array.isArray(scanData.results)) {
+                //         // Process each result from the results array
+                //         scanData.results.forEach(resultData => {
+                //             let resultItem = []; // Define resultItem as an array
+
+                //             if (resultData.results) {
+                //                 resultItem = resultData.results.map((data) =>
+                //                     // data.map((data2) =>
+                //                     //     data2.map((data3) => ({
+                //                     //         type: "hidden_file",
+                //                     //         url: data3.url || "unknown",
+                //                     //         status: data3.status || "unknown",
+                //                     //         redirect: data3.redirect_to || "none",
+                //                     //         content_type: data3.content_type || "unknown",
+                //                     //         content_length: data3.content_length || "unknown"
+                //                     //     }))
+                //                     // )
+
+                //                 )// Flatten the array in case of nested results
+                //             } else {
+                //                 resultItem.push({
+                //                     type: "hidden_file",
+                //                     url: resultData.url || "unknown",
+                //                     status: resultData.status || "unknown",
+                //                     redirect: resultData.redirect_to || "none",
+                //                     content_type: resultData.content_type || "unknown",
+                //                     content_length: resultData.content_length || "unknown"
+                //                 });
+                //             }
+
+                //             if (!filterText || Object.values(resultItem).some(
+                //                 value => value.toString().toLowerCase().includes(filterText.toLowerCase())
+                //             )) {
+                //                 results.push(resultItem);
+                //             }
+                //         });
+                //     }
+                //     break;
+
+                case 'DOM-BasedXss':
+                    if (item.scanType === 'DOM-BasedXss') {
+                        const vulnerabilities = Array.isArray(item.vulnerabilities) ? item.vulnerabilities : [];
+
+                        vulnerabilities.forEach((data) => {
+                            const XssData = {
+                                type: item.scanType || "unknown",
+                                url: data?.target_url || "unknown",
+                                parameter: data?.parameter || "unknown",
+                                payload: data?.payload || "unknown",
+                                status: data?.status_code || "unknown"
+                            };
+                            results.push(XssData);
+                        });
                     }
-                }
-            }
+                    break;
 
-            // Find any subdomain data
-            if (typeof item === 'object') {
-                // Extract subdomains (try different possible paths)
-                const subdomains = item.subdomains ||
-                    (item.data && item.data.subdomains) ||
-                    [];
+                case 'WAFDetector':
+                    const WAFData = Array.isArray(item) ? item[0] : item;
 
-                const liveSubdomains = item.live_subdomains ||
-                    (item.data && item.data.live_subdomains) ||
-                    [];
+                    // console.log('WAFDetector: ', WAFData);
 
-                // If we found subdomains, process them
-                if (Array.isArray(subdomains) && subdomains.length > 0) {
-                    console.log(`FOUND ${subdomains.length} SUBDOMAINS`);
-
-                    subdomains.forEach(subdomain => {
-                        // Skip null or undefined subdomains
-                        if (!subdomain) return;
-
-                        const liveSub = Array.isArray(liveSubdomains) ? liveSubdomains.find(
-                            live => live && live.subdomain === subdomain
-                        ) : null;
-
-                        const resultItem = {
-                            type: "subdomain",
-                            domain: item.domain || "unknown",
-                            subdomain,
-                            ip: liveSub ? liveSub.ip : "--",
-                            status: liveSub ? "200" : "404",
-                        };
-
-                        // Only add if it matches the filter
-                        if (!filterText ||
-                            Object.values(resultItem).some(
-                                value => typeof value === "string" && value.includes(filterText)
-                            )) {
-                            results.push(resultItem);
+                    if (WAFData) {
+                        const WAF = {
+                            type: "waf_detector",
+                            url: WAFData?.Target_URL || "unknown",
+                            ipAddress: WAFData?.IP_Information?.IPAddress || "unknown",
+                            Location: WAFData?.IP_Information?.Location || "unknown",
+                            Latitude: WAFData?.IP_Information?.Latitude || "unknown",
+                            Longitude: WAFData?.IP_Information?.Longitude || "unknown",
+                            WAF: WAFData?.WAF_Detection_Result || "unknown",
+                            ISP: WAFData?.IP_Information?.ISP || "unknown",
+                            server: WAFData?.Server || "unknown",
+                            protection: WAFData?.Protection_Methods || "unknown",
+                            status: WAFData?.Status_Code || "unknown"
                         }
-                    });
-                }
+                        //     const WAF = WAFData.map((data) => ({
+                        // }));
+                        results.push(WAF);
+                    }
+                    break;
+                case 'Hidden-Files-Reconnaissance':
+                    const scanData = Array.isArray(item) ? item[0] : item;
+                    console.log("scanData: ", scanData);
 
-                // Extract vulnerable parameters (try different possible paths)
-                const vulnerableParams = item.vulnerable_parameters ||
-                    (item.data && item.data.vulnerable_parameters) ||
-                    [];
+                    if (scanData && scanData.results && Array.isArray(scanData.results)) {
+                        scanData.results.forEach(resultData => {
+                            let resultItems = [];
 
-                const payloads = item.payloads ||
-                    (item.data && item.data.payloads) ||
-                    [];
+                            // Handle both nested and flat result structures
+                            if (resultData.results && Array.isArray(resultData.results)) {
+                                // Nested structure case
+                                resultItems = resultData.results.map(item => ({
+                                    type: "hidden_file",
+                                    target: resultData.target ? resultData.target.trim() : "unknown",
+                                    url: item.url || "unknown",
+                                    status: item.status || "unknown",
+                                    redirect: item.redirect_to || "none",
+                                    content_type: item.content_type || "unknown",
+                                    content_length: item.content_length || "unknown"
+                                }));
+                            } else if (resultData.url) {
+                                // Flat structure case
+                                resultItems.push({
+                                    type: "hidden_file",
+                                    target: "direct", // or you might want to extract target from URL
+                                    url: resultData.url || "unknown",
+                                    status: resultData.status || "unknown",
+                                    redirect: resultData.redirect_to || "none",
+                                    content_type: resultData.content_type || "unknown",
+                                    content_length: resultData.content_length || "unknown"
+                                });
+                            }
 
-                // If we found vulnerable parameters, process them
-                if (Array.isArray(vulnerableParams) && vulnerableParams.length > 0) {
-                    console.log(`FOUND ${vulnerableParams.length} VULNERABLE PARAMETERS`);
-
-                    vulnerableParams.forEach((param, idx) => {
-                        // Skip null or undefined parameters
-                        if (!param) return;
-
-                        const resultItem = {
-                            type: "sql_injection",
-                            url: item.url || "unknown",
-                            parameter: param,
-                            payload: payloads[idx] || "N/A",
-                            databases: item.databases || [],
-                        };
-
-                        // Only add if it matches the filter
-                        if (!filterText ||
-                            Object.values(resultItem).some(
-                                value => (typeof value === "string" || Array.isArray(value)) &&
-                                    JSON.stringify(value).includes(filterText)
+                            // Filter results if filterText is provided
+                            if (!filterText || resultItems.some(item =>
+                                Object.values(item).some(
+                                    value => value.toString().toLowerCase().includes(filterText.toLowerCase())
+                                )
                             )) {
-                            results.push(resultItem);
-                        }
-                    });
-                }
+                                // Flatten and push to results array
+                                results.push(...resultItems);
+                            }
+                        });
+                    }
+                    break;
+                case 'SQLInjectionScanner':
+                    // Handle SQL Injection results
+                    let sqlData;
+                    // if (item && item.results && Array.isArray(item.results)) {
+                    //     item.results.forEach((data) => {
+                    //         sqlData = data;
+                    //     })
+                    // } else {
+                    //     sqlData = item;
+                    // }
+                    if (item && item.results && Array.isArray(item.results)) {
+                        item.results.forEach((data) => {
+                            // If no vulnerabilities found
+                            if (!data.vulnerable_parameters || data.vulnerable_parameters.length === 0) {
+                                const resultItem = {
+                                    type: "sql_injection",
+                                    status: data.status,
+                                    url: data.url || "unknown",
+                                    parameter: null, // Note: param is undefined here
+                                    payload: null, // Note: idx is undefined here
+                                    databases: data.databases || [],
+                                };
 
-                // If we couldn't find expected properties, log all available properties
-                if (!subdomains.length && (vulnerableParams === null || vulnerableParams.length === 0)) {
-                    console.log(`NO RECOGNIZED DATA IN ITEM ${index}. AVAILABLE KEYS:`, Object.keys(item));
-                }
+                                if (!filterText || Object.values(resultItem).some(
+                                    value => value.toString().toLowerCase().includes(filterText.toLowerCase())
+                                )) {
+                                    results.push(resultItem);
+                                }
+                            }
+                            // If vulnerabilities found
+                            else {
+                                data.vulnerable_parameters.forEach((param, idx) => {
+                                    if (!param) return;
+
+                                    const resultItem = {
+                                        type: "sql_injection",
+                                        status: data.status, // Added status field from non-vulnerable case
+                                        url: data.url || "unknown",
+                                        parameter: param,
+                                        payload: (data.payloads && data.payloads[idx]) || "N/A",
+                                        databases: data.databases || [],
+                                    };
+
+                                    if (!filterText || Object.values(resultItem).some(
+                                        value => value.toString().toLowerCase().includes(filterText.toLowerCase())
+                                    )) {
+                                        results.push(resultItem);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    break;
+
+                // case 'Subdomain-Reconnaissance':
+                //     // Handle subdomain results
+                //     const subdomains = item.subdomains || (item.data && item.data.subdomains) || [];
+                //     if (subdomains.length > 0) {
+                //         const liveSubdomains = item.live_subdomains || (item.data && item.data.live_subdomains) || [];
+
+                //         subdomains.forEach(subdomain => {
+                //             if (!subdomain) return;
+
+                //             const liveSub = Array.isArray(liveSubdomains) ?
+                //                 liveSubdomains.find(live => live && live.subdomain === subdomain) : null;
+
+                //             const resultItem = {
+                //                 type: "subdomain",
+                //                 domain: item.domain || "unknown",
+                //                 subdomain: subdomain,
+                //                 ip: liveSub ? liveSub.ip : "--",
+                //                 status: liveSub ? "200" : "404",
+                //             };
+
+                //             if (!filterText || Object.values(resultItem).some(
+                //                 value => value.toString().toLowerCase().includes(filterText.toLowerCase())
+                //             )) {
+                //                 results.push(resultItem);
+                //             }
+                //         });
+                //     }
+                //     break;
+
+                case 'Subdomain-Reconnaissance':
+                    // Handle subdomain results
+                    // let subdomains = []
+                    // let liveSubdomains = []
+                    // let domain
+                    // // Check if we have a results array in the item
+                    // if (item && item.results && Array.isArray(item.results)) {
+                    //     // Process each result in the results array
+                    //     item.results.forEach(resultData => {
+                    //         console.log("Subdomain resultData:", resultData);
+
+                    //         // Extract subdomains and live_subdomains from the result data
+                    //         subdomains = resultData.subdomains || [];
+                    //         liveSubdomains = resultData.live_subdomains || [];
+                    //         domain = resultData.domain || "unknown";
+                    //     });
+                    // } else {
+                    //     subdomains = item.results.subdomains || [];
+                    //     liveSubdomains = item.results.live_subdomains || [];
+                    //     domain = item.results.domain || "unknown";
+                    // }
+
+                    if (item && item.results && Array.isArray(item.results)) {
+                        // Process each result in the results array
+                        item.results.forEach(resultData => {
+                            console.log("Subdomain resultData:", resultData);
+
+                            // Extract subdomains and live_subdomains from the result data
+                            const subdomains = resultData.subdomains || [];
+                            const liveSubdomains = resultData.live_subdomains || [];
+                            const domain = resultData.domain || "unknown";
+
+                            subdomains.forEach(subdomain => {
+                                if (!subdomain) return;
+
+                                // Find matching live subdomain info if available
+                                const liveSub = Array.isArray(liveSubdomains) ?
+                                    liveSubdomains.find(live => live && live.subdomain === subdomain) : null;
+
+                                const resultItem = {
+                                    type: "subdomain",
+                                    domain: domain,
+                                    subdomain: subdomain,
+                                    ip: liveSub ? liveSub.ip : "--",
+                                    status: liveSub ? "200" : "404",
+                                };
+
+                                if (!filterText || Object.values(resultItem).some(
+                                    value => value.toString().toLowerCase().includes(filterText.toLowerCase())
+                                )) {
+                                    results.push(resultItem);
+                                }
+                            });
+                        });
+                    }
+                    break;
+
+                default:
+                    // Fallback detection if scanType isn't specified
+                    if (Array.isArray(item)) {
+                        // Assume hidden_file if it's an array
+                        const fileItems = item.flat(Infinity);
+                        fileItems.forEach(scanResult => {
+                            if (!scanResult || typeof scanResult !== 'object') return;
+
+                            results.push({
+                                type: "hidden_file",
+                                url: scanResult.url || "unknown",
+                                status: scanResult.status || "unknown",
+                                redirect: scanResult.redirect_to || "none",
+                                content_type: scanResult.content_type || "unknown",
+                                content_length: scanResult.content_length || "unknown"
+                            });
+                        });
+                    } else if (item.url && (item.vulnerable_parameters || item.payloads || item.databases)) {
+                        // Assume SQL injection if URL and vulnerability-related fields exist
+                        if (!item.vulnerable_parameters || item.vulnerable_parameters.length === 0) {
+                            results.push({
+                                type: "sql_injection_secure",
+                                url: item.url,
+                                status: "Secure",
+                                details: "No SQL injection vulnerabilities detected"
+                            });
+                        } else {
+                            item.vulnerable_parameters.forEach((param, idx) => {
+                                if (!param) return;
+                                results.push({
+                                    type: "sql_injection",
+                                    url: item.url || "unknown",
+                                    parameter: param,
+                                    payload: (item.payloads && item.payloads[idx]) || "N/A",
+                                    databases: item.databases || [],
+                                });
+                            });
+                        }
+                    } else if (item.subdomains || (item.data && item.data.subdomains)) {
+                        // Assume subdomain if subdomains field exists
+                        const subdomains = item.subdomains || (item.data && item.data.subdomains) || [];
+                        const liveSubdomains = item.live_subdomains || (item.data && item.data.live_subdomains) || [];
+
+                        subdomains.forEach(subdomain => {
+                            if (!subdomain) return;
+                            const liveSub = Array.isArray(liveSubdomains) ?
+                                liveSubdomains.find(live => live && live.subdomain === subdomain) : null;
+                            results.push({
+                                type: "subdomain",
+                                domain: item.domain || "unknown",
+                                subdomain: subdomain,
+                                ip: liveSub ? liveSub.ip : "--",
+                                status: liveSub ? "200" : "404",
+                            });
+                        });
+                    }
+                    break;
             }
         });
 
-        console.log(`EXTRACTED ${results.length} RESULTS:`, results);
         return results;
     })();
     console.log("Filtered Results:", filteredResults);
@@ -390,6 +787,8 @@ const Scaner = () => {
 
         return 0; // Default case, return no sorting
     });
+
+    console.log("sorted rsult: ", sortedResults)
 
 
     const processLogs = (rawLogs) => {
@@ -424,8 +823,25 @@ const Scaner = () => {
         });
     };
 
+    console.log("data: ", data)
     // Extract logs from scanResults
-    const scanLogs = data[0]?.logs ?? [];
+    // const scanLogs = data[0]?.results[0]?.logs ?? data[0]?.results?.logs ?? data?.[0]?.logs ?? [];
+
+    // const scanData = data && Array.isArray(data) ? data : [];
+    // const firstItem = scanData[0] || {};
+    // const scanLogs = firstItem.results?.[0]?.logs ||
+    //     firstItem.results?.logs ||
+    //     firstItem.logs ||
+    //     [];
+
+    // Alternatively, with a more compact approach:
+    const scanLogs =
+        (data && Array.isArray(data) && data[0]?.results?.[0]?.logs) ||
+        (data && Array.isArray(data) && data[0]?.results?.logs) ||
+        (data && Array.isArray(data) && data[0]?.logs) ||
+        [];
+
+    console.log("scanlogs: ", scanLogs)
     const logs = processLogs(scanLogs);
 
     return (
@@ -443,12 +859,12 @@ const Scaner = () => {
                         className="w-full sm:w-8/9 p-2 rounded-md text-white bg-[#0F172A] border border-[#4C566A]"
                         value={targetUrl}
                         onChange={(e) => setTargetUrl(e.target.value)}
-                        disabled={isLoading}
+                        disabled={loading}
                     />
                     <div className="flex gap-2 mt-2 sm:mt-0">
                         {!toggleBtn && (
                             <button onClick={handleStartScan} className="bg-[#04D2D2] px-4 py-2 rounded-md">
-                                {isLoading ? `Scanning... ${progress}%` : "Start Scan"}
+                                {loading ? `Scanning... ${progress}%` : "Start Scan"}
                             </button>
                         )}
                         {toggleBtn && (
@@ -479,13 +895,13 @@ const Scaner = () => {
                     />
                 )}
 
-                {/* Progress Bar */}
-                {isLoading && (
-                    <div className="w-full bg-gray-700 rounded-full h-2 mt-4">
-                        <div
-                            className="bg-[#04D2D2] h-2 rounded-full"
-                            style={{ width: `${progress}%`, transition: "width 0.5s ease-in-out" }}
-                        ></div>
+                {/* loader */}
+                {loading && (
+                    <div className="w-full mt-4">
+                        <SmartLoader
+                            isLoading={loading}
+                            scanType={cleanedPath}  // Adjust based on scan type
+                        />
                     </div>
                 )}
 

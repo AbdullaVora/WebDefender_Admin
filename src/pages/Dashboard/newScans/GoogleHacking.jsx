@@ -220,7 +220,8 @@
 // export default GoogleHacking;
 
 import React, { useState, useEffect } from 'react';
-import apiInstance from '../../api/instance';
+import apiInstance from '../../../api/instance';
+
 
 const GoogleHacking = () => {
     const [targetUrl, setTargetUrl] = useState('');

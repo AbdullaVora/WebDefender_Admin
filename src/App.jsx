@@ -92,7 +92,12 @@ import Scan from "./pages/Dashboard/Scan";
 import NewScan from "./pages/Dashboard/NewScan";
 import Account from "./pages/Dashboard/Account";
 import PricingPlan from "./pages/Dashboard/PricingPlan";
-import GoogleHacking from "./pages/newScans/GoogleHacking";
+import GoogleHacking from "./pages/Dashboard/newScans/GoogleHacking";
+import WHOIS from "./pages/Dashboard/newScans/WHOIS";
+import EmailAudit from "./pages/Dashboard/newScans/emailAudit";
+import JSParser from "./pages/Dashboard/newScans/JSParser";
+import TechnologyScanner from "./pages/Dashboard/newScans/Technologies";
+import CORS from "./pages/Dashboard/newScans/CORS";
 
 function App() {
   return (
@@ -186,19 +191,54 @@ function App() {
           />
 
           {/* newScans */}
-          <Route path="/google-hacking"
+          <Route path="/new-scan/google-hacking"
             element={
               <Layout>
                 <GoogleHacking />
               </Layout>
             }
           />
-          </Route>
+          <Route path="/new-scan/whois"
+            element={
+              <Layout>
+                <WHOIS />
+              </Layout>
+            }
+          />
+          <Route path="/new-scan/emailAudit"
+            element={
+              <Layout>
+                <EmailAudit />
+              </Layout>
+            }
+          />
+          <Route path="/new-scan/JSParser"
+            element={
+              <Layout>
+                <JSParser />
+              </Layout>
+            }
+          />
+          <Route path="/new-scan/technologiesScan"
+            element={
+              <Layout>
+                <TechnologyScanner />
+              </Layout>
+            }
+          />
+          <Route path="/new-scan/CORS"
+            element={
+              <Layout>
+                <CORS />
+              </Layout>
+            }
+          />
+        </Route>
 
 
 
-          {/* 404 Not Found */}
-          <Route path="*" element={<NotFound />} />
+        {/* 404 Not Found */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

@@ -25,6 +25,8 @@ const Login = () => {
   useEffect(() => {
     if (isAuthenticated) {
       navigate("/dashboard", { replace: true });  // Redirect after authentication
+    } else {
+      navigate("/")
     }
   }, [isAuthenticated, navigate]);  // Runs when `isAuthenticated` updates
 

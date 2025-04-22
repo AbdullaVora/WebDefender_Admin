@@ -19,6 +19,7 @@ export const register = createAsyncThunk(
 
             if (response.data?.token) {
                 localStorage.setItem("auth_token", response.data.token);
+                localStorage.setItem("userId", response.data.user_id);
                 return response.data;
             }
 
@@ -43,6 +44,7 @@ export const login = createAsyncThunk(
             if (response.status === 200) {
                 const token = response.data?.token;
                 localStorage.setItem("auth_token", token);
+                localStorage.setItem("userId", response.data.user_id);
             } else {
                 return rejectWithValue("Inavalid email/password");
             }

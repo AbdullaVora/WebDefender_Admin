@@ -345,16 +345,16 @@ const NewScan = () => {
     {
       category: 'Web scans',
       tools: [
-        { id: 'website-scanner', link: "/website-scanner", name: 'Website Scanner', description: 'Analyze website risks, find all its web applications/domains', icon: '🌐' },
-        { id: 'google-hacking', link: "/google-hacking", name: 'Google Hacking', description: 'Find online footprints of a target through search engines', icon: '🔍' }
+        { id: 'website-technologies-scanner', link: "/new-scan/technologiesScan", name: 'Website Technologies Scanner', description: 'Scanning Website and find using technologies', icon: '🌐' },
+        { id: 'google-hacking', link: "/new-scan/google-hacking", name: 'Google Hacking', description: 'Find online footprints of a target through search engines', icon: '🔍' }
       ]
     },
     {
       category: 'Network & Cloud scans',
       tools: [
-        { id: 'network-scanner', link: "/network-scanner", name: 'Network Scanner', description: 'Identify live hosts on target network/ranges/domains', icon: '📶' },
+        { id: 'CORS Scanner', link: "/new-scan/CORS", name: 'CORS Scanner', description: 'Scan CORS in website and find security level', icon: '📶' },
         { id: 'domain-finder', link: "/domain-finder", name: 'Domain Finder', description: 'Find online footprints of target\'s domain names', icon: '🌐' },
-        { id: 'virtual-hosts-finder', link: "/virtual-hosts-finder", name: 'Virtual Hosts Finder', description: 'Find multiple web hosts on the same server', icon: '💻' },
+        { id: 'emailAudit', link: "/new-scan/emailAudit", name: 'Secure Email Audit', description: 'Scan the secure email audit', icon: '💻' },
         { id: 'port-scanner', link: "/port-scanner", name: 'Port Scanner', description: 'Detect open ports and fingerprint services', icon: '🔌' }
       ]
     },
@@ -363,7 +363,7 @@ const NewScan = () => {
       tools: [
         { id: 'website-recon', link: "/website-recon", name: 'Website Recon', description: 'Fingerprint web technologies of target websites', icon: '🔎' },
         { id: 'url-fuzzer', link: "/url-fuzzer", name: 'URL Fuzzer', description: 'Discover hidden files and directories', icon: '📁' },
-        { id: 'waf-detector', link: "/waf-detector", name: 'WAF Detector', description: 'Detect protection mechanisms on target websites', icon: '🛡️' },
+        { id: 'JSParser', link: "/new-scan/JSParser", name: 'JS Parser', description: 'Scanning and find the js files from website', icon: '🛡️' },
         { id: 'subdomain-finder', link: "/subdomain-finder", name: 'Subdomain Finder', description: 'Discover subdomains of a domain', icon: '📊' },
         { id: 'people-hunter', link: "/people-hunter", name: 'People Hunter', description: 'Research email addresses and social media profiles', icon: '👤' }
       ]

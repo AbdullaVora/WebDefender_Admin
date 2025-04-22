@@ -29,7 +29,8 @@ export const scanStart = createAsyncThunk(
     async ({ domain, path, custom }, { rejectWithValue }) => {
         try {
             console.log("Starting scan for URL: ", domain, path, custom);
-            const response = await apiInstance.post(`/api/tools/${path}`, { domain: domain, custom: custom }, { headers: { 'Content-Type': 'application/json' } });
+            const userId = localStorage.getItem('userId');
+            const response = await apiInstance.post(`/api/tools/${path}`, { domain: domain, custom: custom, userId }, { headers: { 'Content-Type': 'application/json' } });
             console.log("Scan started: ", response.data);
             return response.data;
         } catch (error) {

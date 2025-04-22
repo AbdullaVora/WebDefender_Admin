@@ -31,6 +31,34 @@ const getLoaderConfig = (scanType) => {
                 estimatedDuration: 90000, // 1.5m
                 longLoadMessage: "Scanning for hidden files and directories..."
             };
+        case 'GoogleHacking':
+            return {
+                minDuration: 3000,     // 3s
+                maxDuration: 120000,    // 2m
+                estimatedDuration: 30000, // 1.5m
+                longLoadMessage: "Scanning for GoogleHacking..."
+            }
+        case 'emailAudit':
+            return {
+                minDuration: 4000,     // 5s
+                maxDuration: 120000,    // 4m
+                estimatedDuration: 40000, // 1.5m
+                longLoadMessage: "Scanning for EmailAudit..."
+            }
+        case 'JSParser':
+            return {
+                minDuration: 6000,     // 5s
+                maxDuration: 240000,    // 4m
+                estimatedDuration: 40000, // 1.5m
+                longLoadMessage: "Scanning for JSParser..."
+            }
+        case 'technologies':
+            return {
+                minDuration: 2000,     // 5s
+                maxDuration: 6000,    // 4m
+                estimatedDuration: 20000, // 1.5m
+                longLoadMessage: "Scanning for technologies..."
+            }
         default:
             return {
                 minDuration: 5000,      // 5s

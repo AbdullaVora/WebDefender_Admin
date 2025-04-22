@@ -221,7 +221,7 @@ const Aside = ({ isCollapsed }) => {
                 {!isCollapsed && "Scans"}
               </li>
             </Link>
-            <Link to="/findings" className="text-decoration-none">
+            {/* <Link to="/findings" className="text-decoration-none">
               <li
                 className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/findings"
@@ -232,7 +232,7 @@ const Aside = ({ isCollapsed }) => {
                 <IoBugSharp size={20} />
                 {!isCollapsed && "Findings"}
               </li>
-            </Link>
+            </Link> */}
             <Link to="/surface" className="text-decoration-none">
               <li
                 className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"

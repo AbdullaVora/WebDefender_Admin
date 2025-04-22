@@ -321,6 +321,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import PageTitle from "../../components/PageTitle"
 
 const NewScan = () => {
   const [activeTab, setActiveTab] = useState('quick-start');
@@ -535,11 +536,9 @@ const NewScan = () => {
   };
 
   return (
-    <div style={{ backgroundColor: colors.lightGray }} className="min-h-screen main-container">
-      <h2 className="text-[#04D2D2] mx-2 border-b-2 border-[#4C566A] my-3 p-3 text-xl font-bold bg-[#040C1F]">
-        New Scans
-      </h2>
-      <div className="mx-2 bg-[#040C1F] rounded-lg shadow-md">
+    <div className="min-h-screen main-container bg-[#0E1427] text-white p-6">
+      <PageTitle title="New Scan" />
+      <div className=" bg-[#040C1F] rounded-lg shadow-md">
         <div className="p-4 border-b-2 border-[#4C566A]">
           <div className="flex mt-4 border-[#4C566A] border-b-2">
             {tabs.map(tab => (

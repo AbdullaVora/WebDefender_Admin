@@ -1,23 +1,39 @@
-import React from 'react'
-import ToolBox from '../../../components/ToolBox'
-import { tools } from '../../../data/ToolsContainer.json'
+import React from "react";
+import ToolBox from "../../../components/ToolBox";
+import { tools } from "../../../data/ToolsContainer.json";
+import PageTitle from "../../../components/PageTitle";
 const Tools_Main = () => {
-
-    return (
-        <div className='main-cintainers'>
-            <h2 className="text-[#04D2D2]  mx-2 border-b-2 border-[#4C566A] my-3 p-3 text-xl font-bold bg-[#040C1F]">
-                Tools for Attacks and Scanning
-                <p className='block text-[12px] font-normal opacity-85 mt-1'>Identify and fix security vulnerabilities before they become threats. Stay protected with advanced vulnerability scanning solutions!</p>
-            </h2>
-            <div className="flex flex-wrap mx-3">
-                {
-                    tools.map((tool, index) => (
-                        <ToolBox key={index} title={tool.title} description={tool.description} subtool={tool.subtool} />
-                    ))
-                }
-            </div>
-        </div>
-    )
-}
+  return (
+    <div className="min-h-screen main-container bg-[#0E1427] text-white p-6">
+      <div className="main-cintainers">
+        <PageTitle
+          title="Tools for Attacks and Scanning"
+          desc="Identify and fix security vulnerabilities before they become threats. Stay protected with advanced vulnerability scanning solutions!"
+        />
+        {/* <div className="flex flex-wrap">
+          {tools.map((tool, index) => (
+            <ToolBox
+              key={index}
+              title={tool.title}
+              description={tool.description}
+              subtool={tool.subtool}
+            />
+          ))}
+        </div> */}
+         <div className="flex flex-wrap -mx-3">
+        {tools.map((tool, index) => (
+          <ToolBox
+            key={index}
+            title={tool.title}
+            description={tool.description}
+            subtool={tool.subtool}
+            icon={tool.icon}
+          />
+        ))}
+      </div>
+      </div>
+    </div>
+  );
+};
 
 export default Tools_Main;

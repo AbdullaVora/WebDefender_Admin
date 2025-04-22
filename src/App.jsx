@@ -93,6 +93,9 @@ import NewScan from "./pages/Dashboard/NewScan";
 import Account from "./pages/Dashboard/Account";
 import PricingPlan from "./pages/Dashboard/PricingPlan";
 import GoogleHacking from "./pages/newScans/GoogleHacking";
+import Team from "./pages/Dashboard/Team";
+import Asset from "./pages/Dashboard/Asset";
+import AttackSurface from "./pages/Dashboard/AttackSurface";
 
 function App() {
   return (
@@ -181,6 +184,30 @@ function App() {
             element={
               <Layout>
                 <PricingPlan />
+              </Layout>
+            }
+          />
+          <Route
+            path="/team"
+            element={
+              <Layout>
+                <Team />
+              </Layout>
+            }
+          />
+          <Route
+            path="/assets"
+            element={
+              <Layout>
+                <Asset />
+              </Layout>
+            }
+          />
+          <Route
+            path="/surface"
+            element={
+              <Layout>
+                <AttackSurface />
               </Layout>
             }
           />

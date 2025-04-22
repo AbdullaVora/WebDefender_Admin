@@ -163,14 +163,14 @@ const Aside = ({ isCollapsed }) => {
 
   return (
     <div
-      className={`aside fixed mt-16 start-0 z-20 h-screen bg-[#040C1F] transition-all duration-300 border-e border-[#4C566A] ${isCollapsed ? "w-[68px]" : "w-[220px]"
+      className={`aside fixed mt-16 start-0 z-20 h-screen bg-[#040C1F] transition-all duration-300 border-e border-[#1E293B] ${isCollapsed ? "w-[72px]" : "w-[224px]"
         }`}
     >
       <div className={`flex flex-col ${isCollapsed ? "items-center px-2" : "px-5"}`}>
         <Link to="/new-scan">
           <button
             type="button"
-            className={`bg-[#00FFFF] flex cursor-pointer items-center justify-center rounded-[5px] font-bold text-black transition-all ${isCollapsed ? "w-10 h-10 p-0 mt-5" : "w-[170px] py-[6px] mt-5"
+            className={`bg-[#00FFFF] flex cursor-pointer items-center justify-center rounded-[5px] font-bold text-black transition-all ${isCollapsed ? "w-[55px] h-10 p-0 mt-5" : "w-[183px] py-[6px] mt-5"
               }`}
           >
             <MdOutlineElectricBolt size={22} className={isCollapsed ? "" : "ms-[-10px]"} />
@@ -187,7 +187,7 @@ const Aside = ({ isCollapsed }) => {
           <ul className={`list-none mt-3 space-y-1 ${isCollapsed ? "px-0" : ""}`}>
             <Link to="/dashboard" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all p-2 mb-1 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/dashboard"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"
@@ -199,7 +199,7 @@ const Aside = ({ isCollapsed }) => {
             </Link>
             <Link to="/assets" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all p-2 mb-1 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/assets"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"
@@ -211,7 +211,7 @@ const Aside = ({ isCollapsed }) => {
             </Link>
             <Link to="/scan" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all p-2 mb-1 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/scan"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"
@@ -223,7 +223,7 @@ const Aside = ({ isCollapsed }) => {
             </Link>
             <Link to="/findings" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all p-2 mb-1 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/findings"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"
@@ -235,7 +235,7 @@ const Aside = ({ isCollapsed }) => {
             </Link>
             <Link to="/surface" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all p-2 mb-1 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/surface"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"
@@ -247,7 +247,7 @@ const Aside = ({ isCollapsed }) => {
             </Link>
             <Link to="/tools" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all p-2 mb-1 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/tools"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"
@@ -267,7 +267,7 @@ const Aside = ({ isCollapsed }) => {
           <ul className={`list-none ${isCollapsed ? "mt-6" : "mt-3"} space-y-1`}>
             <Link to="/reports" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all mb-1 p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/reports"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"
@@ -279,7 +279,7 @@ const Aside = ({ isCollapsed }) => {
             </Link>
             <Link to="/team" className="text-decoration-none">
               <li
-                className={`flex cursor-pointer items-center font-medium transition-all p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
+                className={`flex cursor-pointer items-center font-medium transition-all mb-1 p-2 rounded-md hover:bg-[#1A2C4E] ${isCollapsed ? "justify-center" : "gap-3"
                   } ${location.pathname === "/team"
                     ? "text-[#00FFFF] bg-[#1A2C4E] opacity-100"
                     : "text-[#00E6E6] opacity-60 hover:opacity-100"

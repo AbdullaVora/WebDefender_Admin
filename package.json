@@ -20,11 +20,8 @@
     "autoprefixer": "^10.4.21",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
-<<<<<<< HEAD
     "devicon": "^2.16.0",
-=======
     "framer-motion": "^12.7.4",
->>>>>>> 3a77a8db43bb23f21ed87a923055facc2ef7e306
     "gsap": "^3.12.7",
     "lucide-react": "^0.475.0",
     "postcss": "^8.5.3",

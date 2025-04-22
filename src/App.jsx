@@ -92,19 +92,17 @@ import Scan from "./pages/Dashboard/Scan";
 import NewScan from "./pages/Dashboard/NewScan";
 import Account from "./pages/Dashboard/Account";
 import PricingPlan from "./pages/Dashboard/PricingPlan";
-<<<<<<< HEAD
+
 import GoogleHacking from "./pages/Dashboard/newScans/GoogleHacking";
 import WHOIS from "./pages/Dashboard/newScans/WHOIS";
-import EmailAudit from "./pages/Dashboard/newScans/emailAudit";
+import EmailAudit from "./pages/Dashboard/newScans/EmailAudit";
 import JSParser from "./pages/Dashboard/newScans/JSParser";
 import TechnologyScanner from "./pages/Dashboard/newScans/Technologies";
 import CORS from "./pages/Dashboard/newScans/CORS";
-=======
-import GoogleHacking from "./pages/newScans/GoogleHacking";
 import Team from "./pages/Dashboard/Team";
 import Asset from "./pages/Dashboard/Asset";
 import AttackSurface from "./pages/Dashboard/AttackSurface";
->>>>>>> 3a77a8db43bb23f21ed87a923055facc2ef7e306
+
 
 function App() {
   return (

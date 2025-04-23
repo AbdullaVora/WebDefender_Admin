@@ -3,7 +3,7 @@ import axios from "axios";
 
 const apiInstance = axios.create({
   // baseURL: "https://web-defender-backend.vercel.app",
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: 'http://127.0.0.1:8002',
   headers: {
     "Content-Type": "application/json",
   },

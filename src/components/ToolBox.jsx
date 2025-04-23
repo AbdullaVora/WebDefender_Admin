@@ -46,9 +46,9 @@ const ToolBox = ({ title, description, subtool, icon }) => {
 
   const onNavigate = () => {
     if (subtool === 'true') {
-      navigate(`/tools/${encodeURIComponent(title).replace(/\s+/g, '')}`);
+      navigate(`/tools/${encodeURIComponent(title.replace(/\s+/g, ''))}`);
     } else {
-      navigate(`/tools/${encodeURIComponent(title).replace(/\s+/g, '')}/scan`);
+      navigate(`/tools/${encodeURIComponent(title.replace(/\s+/g, ''))}/scan`);
     }
   };
 

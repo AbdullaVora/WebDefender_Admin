@@ -10,6 +10,12 @@ const WHOIS = () => {
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
     const [scanDuration, setScanDuration] = useState(null);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const id = localStorage.getItem('userId');
+        setUserId(id)
+    })
 
     const handleScan = async () => {
         if (!domain) {
@@ -26,7 +32,8 @@ const WHOIS = () => {
         try {
             const cleanDomain = domain.replace(/^https?:\/\//i, '').trim();
             const response = await apiInstance.post('/api/newScans/whois', {
-                domain: cleanDomain
+                domain: cleanDomain,
+                userId: userId
             }, {
                 headers: {
                     'Content-Type': 'application/json'

@@ -189,7 +189,7 @@
 
 // export default TechnologyScanner;
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import apiInstance from '../../../api/instance';
 import SmartLoader from '../../../components/Loader/SmartLoader';
@@ -203,6 +203,12 @@ const TechnologyScanner = () => {
     const [scanEndTime, setScanEndTime] = useState(null);
     const [scanDuration, setScanDuration] = useState(null);
     const [scanStatus, setScanStatus] = useState('Ready to start scan');
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const id = localStorage.getItem('userId');
+        setUserId(id)
+    })
 
     const handleScan = async () => {
         if (!url) {
@@ -226,7 +232,7 @@ const TechnologyScanner = () => {
         setScanStatus(`Scanning domain: ${url}...`);
 
         try {
-            const response = await apiInstance.post('/api/newScans/technologiesScan', { url });
+            const response = await apiInstance.post('/api/newScans/technologiesScan', { userId, url });
             setScanResult(response.data);
             setScanStatus('Scan completed successfully');
         } catch (err) {

@@ -34,9 +34,30 @@ body {
   }
 }
 
+@keyframes moveStripes {
+  0% {
+    background-position: 0 0;
+  }
 
+  100% {
+    background-position: 40px 0;
+  }
+}
 
-.smart-loader-container {
+.animate-stripes {
+  background-image: linear-gradient(45deg,
+      rgba(255, 255, 255, 0.55) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.55) 50%,
+      rgba(255, 255, 255, 0.55) 75%,
+      transparent 75%,
+      transparent);
+  background-size: 40px 40px;
+  animation: moveStripes 1s linear infinite;
+}
+
+/* .smart-loader-container {
   position: relative;
   width: 100%;
   height: 4px;
@@ -49,9 +70,9 @@ body {
 .progress-bar {
   height: 100%;
   border-radius: 2px;
-  will-change: width; /* Optimize for animation */
-}
-
+  will-change: width; 
+} */
+/* 
 .long-load-message {
   position: absolute;
   top: 10px;
@@ -90,7 +111,7 @@ body {
   25% { opacity: 0.4; }
   50% { opacity: 0.8; }
   75% { opacity: 0.2; }
-}
+} */
 
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;

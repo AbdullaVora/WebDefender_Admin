@@ -19,7 +19,7 @@ const EmailAudit = () => {
         setUserId(id)
     },[])
 
-    console.log(userId)
+    // console.log(userId)
 
 
     const handleScan = async () => {

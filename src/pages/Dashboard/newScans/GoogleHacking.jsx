@@ -231,6 +231,13 @@ const GoogleHacking = () => {
     const [categories, setCategories] = useState([]);
     const [error, setError] = useState(null);
     const [searchHistory, setSearchHistory] = useState([]);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const id = localStorage.getItem('userId');
+        setUserId(id)
+    })
+
 
     // Define how categories should be grouped
     const CATEGORY_GROUPS = {

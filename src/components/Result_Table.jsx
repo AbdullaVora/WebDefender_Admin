@@ -35,16 +35,17 @@ const Result_Table = ({ sortedResults, scanType }) => {
                     )}
                     {scanType === "WAFDetector" && (
                         <>
-                            <th className="px-4 py-3">URL</th>
-                            <th className="px-4 py-3">IP Address</th>
-                            <th className="px-4 py-3">WAF</th>
-                            <th className="px-4 py-3">ISP</th>
-                            <th className="px-4 py-3">Protection</th>
-                            <th className="px-4 py-3">Server</th>
-                            <th className="px-4 py-3">Location</th>
-                            <th className="px-4 py-3">Latitude</th>
-                            <th className="px-4 py-3">Longitude</th>
-                            <th className="px-4 py-3">Status</th>
+                            <th className="px-5 py-3">URL</th>
+                            <th className="px-5 py-3">IP Address</th>
+                            <th className="px-5 py-3">WAF</th>
+                            <th className="px-5 py-3">ISP</th>
+                            <th className="px-5 py-3">Protection</th>
+                            <th className="px-5 py-3">Server</th>
+                            <th className="px-5 py-3">Location</th>
+                            <th className="px-5 py-3">Latitude</th>
+                            <th className="px-5 py-3">Longitude</th>
+                            {/* <th className="px-4 py-3">Status</th> */}
+                            <th className="px-18 py-3">Map</th>
                         </>
                     )}
                     {scanType === "DOM-BasedXss" && (
@@ -60,8 +61,8 @@ const Result_Table = ({ sortedResults, scanType }) => {
             <tbody>
                 {sortedResults.length === 0 ? (
                     <tr>
-                        <td colSpan={5} className="px-4 py-3 text-center text-gray-500">
-                            No matching results.
+                        <td colSpan={12} className="px-4 py-5 text-lg text-center text-gray-500">
+                            No results.
                         </td>
                     </tr>
                 ) : (
@@ -115,7 +116,29 @@ const Result_Table = ({ sortedResults, scanType }) => {
                                     <td className="px-4 py-3">{item.Location}</td>
                                     <td className="px-4 py-3">{item.Latitude}</td>
                                     <td className="px-4 py-3">{item.Longitude}</td>
-                                    <td className="px-4 py-3">{item.status}</td>
+                                    {/* <td className="px-4 py-3">{item.status}</td> */}
+                                    <td className="px-4 py-3">
+                                        {item.Latitude !== "unknown" && item.Longitude !== "unknown" ? (
+                                            <a
+                                                href={`https://www.google.com/maps?q=${item.Latitude},${item.Longitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                <iframe
+                                                    title="map"
+                                                    width="150"
+                                                    height="80"
+                                                    style={{ border: 0, borderRadius: "10px" }}   
+                                                    loading="lazy"
+                                                    allowFullScreen
+                                                    src={`https://www.google.com/maps?q=${item.Latitude},${item.Longitude}&z=14&output=embed`}
+                                                ></iframe>
+                                            </a>
+                                        ) : (
+                                            "N/A"
+                                        )}
+                                    </td>
+
                                 </tr>
                             ))
                         )}

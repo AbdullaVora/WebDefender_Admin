@@ -2427,20 +2427,32 @@ const Reports = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const id = localStorage.getItem("userId");
+    setUserId(id)
+  }, [])
+
+
   // Fetch data from API
   useEffect(() => {
+    if (!userId) return; // 🚫 Skip if userId isn't ready
+
     const fetchReports = async () => {
       try {
         setLoading(true);
-        const response = await apiInstance.get('/api/reports');
+        const response = await apiInstance.get('/api/reports', {
+          params: {
+            userId
+          }
+        });
         const data = response.data;
         setApiData(data);
-        
-        // Transform API data into a unified format for display
+
         const allReports = transformApiData(data);
         setReports(allReports);
-        
-        // Calculate severity data for charts
+
         calculateChartData(allReports);
         setLoading(false);
       } catch (error) {
@@ -2450,34 +2462,77 @@ const Reports = () => {
     };
 
     fetchReports();
-  }, []);
+  }, [userId]); // ✅ Trigger this effect only after userId is set
 
   // Transform API data into a unified format for the UI
+  // const transformApiData = (data) => {
+  //   const allReports = [];
+
+  //   // Process each report type and map to common format
+  //   Object.keys(data).forEach(reportType => {
+  //     data[reportType].forEach(report => {
+  //       const commonReport = {
+  //         id: report._id || report.id || `RPT-${Math.random().toString(36).substr(2, 8)}`,
+  //         tool: getToolName(reportType),
+  //         status: report.scanStatus === "success" ? "Passed" : "Failed",
+  //         timestamp: report.created_time,
+  //         duration: report.duration || `${Math.floor(Math.random() * 20) + 1}m ${Math.floor(Math.random() * 60)}s`,
+  //         target: report.target || report.url || report.domain || "Unknown target",
+  //         findings: report.vulnerabilities ? report.vulnerabilities.length :
+  //           (report.issues ? report.issues.length :
+  //             (report.files ? report.files.length : 0)),
+  //         severity: determineSeverity(report),
+  //         details: generateDetails(report, reportType),
+  //         rawData: report // Store the original report data for download
+  //       };
+
+  //       allReports.push(commonReport);
+  //     });
+  //   });
+
+  //   return allReports;
+  // };
+
+
   const transformApiData = (data) => {
     const allReports = [];
-    
+
     // Process each report type and map to common format
     Object.keys(data).forEach(reportType => {
       data[reportType].forEach(report => {
+        // Extract target from different possible locations in the report
+        const target = report.results?.[0]?.target ||
+          report.results?.[0]?.url ||
+          report.results?.[0]?.domain ||
+          report.url ||
+          report.domain ||
+          report.target || 
+          report.Target_URL ||
+          "Unknown target";
+
+        console.log("Extracted target:", target);
+
+
         const commonReport = {
           id: report._id || report.id || `RPT-${Math.random().toString(36).substr(2, 8)}`,
           tool: getToolName(reportType),
-          status: report.status || (report.vulnerabilities && report.vulnerabilities.length > 0 ? "Failed" : "Passed"),
-          timestamp: report.timestamp || report.createdAt || new Date().toISOString(),
+          status: report.scanStatus === "success" ? "Passed" : "Failed",
+          timestamp: report.created_time,
           duration: report.duration || `${Math.floor(Math.random() * 20) + 1}m ${Math.floor(Math.random() * 60)}s`,
-          target: report.target || report.url || report.domain || "Unknown target",
-          findings: report.vulnerabilities ? report.vulnerabilities.length : 
-                  (report.issues ? report.issues.length : 
-                  (report.files ? report.files.length : 0)),
+          target: target,  // Use the extracted target
+          findings: report.vulnerabilities ? report.vulnerabilities.length :
+            (report.issues ? report.issues.length :
+              (report.files ? report.files.length :  
+                (report.results?.[0]?.subdomains ? report.results?.[0]?.subdomains.length : 0))),
           severity: determineSeverity(report),
           details: generateDetails(report, reportType),
-          rawData: report // Store the original report data for download
+          rawData: report
         };
-        
+
         allReports.push(commonReport);
       });
     });
-    
+
     return allReports;
   };
 
@@ -2498,25 +2553,25 @@ const Reports = () => {
   // Determine severity based on report content
   const determineSeverity = (report) => {
     if (report.severity) return report.severity;
-    
+
     if (report.vulnerabilities && report.vulnerabilities.length > 0) {
       const hasCritical = report.vulnerabilities.some(v => v.severity === 'critical');
       if (hasCritical) return "Critical";
-      
+
       const hasHigh = report.vulnerabilities.some(v => v.severity === 'high');
       if (hasHigh) return "High";
-      
+
       return "Medium";
     }
-    
+
     return "None";
   };
 
   // Generate details text based on report type
   const generateDetails = (report, reportType) => {
-    switch(reportType) {
+    switch (reportType) {
       case 'subdomain_reports':
-        return `Found ${report.subdomains ? report.subdomains.length : 0} subdomains`;
+        return `Found ${report.results?.[0]?.subdomains ? report.results?.[0]?.subdomains.length : 0} subdomains`;
       case 'sql_reports':
         return `Found ${report.vulnerabilities ? report.vulnerabilities.length : 0} SQL injection vulnerabilities`;
       case 'hidden_files':
@@ -2663,10 +2718,10 @@ const Reports = () => {
   // Download report as JSON
   const downloadReport = (report) => {
     const dataStr = JSON.stringify(report.rawData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
     const exportFileDefaultName = `${report.tool}_${report.id}.json`;
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
@@ -2743,7 +2798,7 @@ const Reports = () => {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <p className="text-sm text-gray-400">Target</p>
-                <p className="text-lg font-medium">{selectedReport.target}</p>
+                <p className="text-lg text-[#04D2D2] font-medium">{selectedReport.target}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Status</p>
@@ -2753,17 +2808,17 @@ const Reports = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Date & Time</p>
-                <p className="font-medium">
+                <p className="font-medium text-[#04D2D2]">
                   {new Date(selectedReport.timestamp).toLocaleString()}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Duration</p>
-                <p className="font-medium">{selectedReport.duration}</p>
+                <p className="font-medium text-[#04D2D2]">{selectedReport.duration}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Findings</p>
-                <p className="font-medium">{selectedReport.findings}</p>
+                <p className="font-medium text-[#04D2D2]">{selectedReport.findings}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-400">Severity</p>
@@ -2882,7 +2937,7 @@ const Reports = () => {
                         {report.tool}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
-                        {report.target}
+                        {report.target || report.results?.domain || "N/A"}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">
                         {renderStatusBadge(report.status)}
@@ -2938,22 +2993,20 @@ const Reports = () => {
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                    page === 1
-                      ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
-                      : "bg-[#1A2335] text-white hover:bg-[#253247]"
-                  }`}
+                  className={`relative inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${page === 1
+                    ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
+                    : "bg-[#1A2335] text-white hover:bg-[#253247]"
+                    }`}
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
-                  className={`relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${
-                    page === totalPages
-                      ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
-                      : "bg-[#1A2335] text-white hover:bg-[#253247]"
-                  }`}
+                  className={`relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium rounded-md ${page === totalPages
+                    ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
+                    : "bg-[#1A2335] text-white hover:bg-[#253247]"
+                    }`}
                 >
                   Next
                 </button>
@@ -2984,11 +3037,10 @@ const Reports = () => {
                     <button
                       onClick={() => setPage(Math.max(1, page - 1))}
                       disabled={page === 1}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md ${
-                        page === 1
-                          ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
-                          : "bg-[#1A2335] text-white hover:bg-[#253247]"
-                      }`}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-l-md ${page === 1
+                        ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
+                        : "bg-[#1A2335] text-white hover:bg-[#253247]"
+                        }`}
                     >
                       <span className="sr-only">Previous</span>
                       <svg
@@ -3012,11 +3064,10 @@ const Reports = () => {
                       <button
                         key={pageNum}
                         onClick={() => setPage(pageNum)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${
-                          page === pageNum
-                            ? "bg-[#04D2D2] text-black"
-                            : "bg-[#1A2335] text-white hover:bg-[#253247]"
-                        }`}
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-medium ${page === pageNum
+                          ? "bg-[#04D2D2] text-black"
+                          : "bg-[#1A2335] text-white hover:bg-[#253247]"
+                          }`}
                       >
                         {pageNum}
                       </button>
@@ -3026,11 +3077,10 @@ const Reports = () => {
                         setPage(Math.min(totalPages, page + 1))
                       }
                       disabled={page === totalPages || totalPages === 0}
-                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md ${
-                        page === totalPages || totalPages === 0
-                          ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
-                          : "bg-[#1A2335] text-white hover:bg-[#253247]"
-                      }`}
+                      className={`relative inline-flex items-center px-2 py-2 rounded-r-md ${page === totalPages || totalPages === 0
+                        ? "bg-[#1A2335] text-gray-500 cursor-not-allowed"
+                        : "bg-[#1A2335] text-white hover:bg-[#253247]"
+                        }`}
                     >
                       <span className="sr-only">Next</span>
                       <svg
@@ -3061,7 +3111,7 @@ const Reports = () => {
     <div className="p-6">
       {/* Main content */}
       <div className="flex flex-col min-h-screen text-white bg-[#0E1427]">
-        <PageTitle title="Security Scan Reports" desc="View and analyze your security scanning results"/>
+        <PageTitle title="Security Scan Reports" desc="View and analyze your security scanning results" />
 
         {/* Dashboard stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

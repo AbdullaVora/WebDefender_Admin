@@ -365,7 +365,7 @@ const NewScan = () => {
         { id: 'website-recon', link: "/website-recon", name: 'Website Recon', description: 'Fingerprint web technologies of target websites', icon: '🔎' },
         { id: 'url-fuzzer', link: "/url-fuzzer", name: 'URL Fuzzer', description: 'Discover hidden files and directories', icon: '📁' },
         { id: 'JSParser', link: "/new-scan/JSParser", name: 'JS Parser', description: 'Scanning and find the js files from website', icon: '🛡️' },
-        { id: 'subdomain-finder', link: "/subdomain-finder", name: 'Subdomain Finder', description: 'Discover subdomains of a domain', icon: '📊' },
+        { id: 'WHOIS-Scanner', link: "/new-scan/whois", name: 'WHOIS SCANNER', description: 'Discover WHOIS Scan Website', icon: '📊' },
         { id: 'people-hunter', link: "/people-hunter", name: 'People Hunter', description: 'Research email addresses and social media profiles', icon: '👤' }
       ]
     }

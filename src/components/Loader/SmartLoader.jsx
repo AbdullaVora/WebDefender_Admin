@@ -8,63 +8,63 @@ const getLoaderConfig = (scanType) => {
                 minDuration: 10000,     // 10s before showing "taking longer" message
                 maxDuration: 600000,    // 10m maximum expected duration
                 estimatedDuration: 300000, // 5m average duration
-                longLoadMessage: "XSS scan may take several minutes for complex sites..."
+                // longLoadMessage: "XSS scan may take several minutes for complex sites..."
             };
         case 'Subdomain-Reconnaissance':
             return {
                 minDuration: 15000,     // 15s
                 maxDuration: 420000,    // 7m
                 estimatedDuration: 240000, // 4m
-                longLoadMessage: "Subdomain enumeration in progress. Large domains take longer..."
+                // longLoadMessage: "Subdomain enumeration in progress. Large domains take longer..."
             };
         case 'SQLInjectionScanner':
             return {
                 minDuration: 8000,      // 8s
                 maxDuration: 300000,    // 5m
                 estimatedDuration: 120000, // 2m
-                longLoadMessage: "SQL injection testing requires thorough parameter checks..."
+                // longLoadMessage: "SQL injection testing requires thorough parameter checks..."
             };
         case 'Hidden-Files-Reconnaissance':
             return {
                 minDuration: 5000,     // 5s
                 maxDuration: 240000,    // 4m
                 estimatedDuration: 90000, // 1.5m
-                longLoadMessage: "Scanning for hidden files and directories..."
+                // longLoadMessage: "Scanning for hidden files and directories..."
             };
         case 'GoogleHacking':
             return {
                 minDuration: 3000,     // 3s
                 maxDuration: 120000,    // 2m
                 estimatedDuration: 30000, // 1.5m
-                longLoadMessage: "Scanning for GoogleHacking..."
+                // longLoadMessage: "Scanning for GoogleHacking..."
             }
         case 'emailAudit':
             return {
                 minDuration: 4000,     // 5s
                 maxDuration: 120000,    // 4m
                 estimatedDuration: 40000, // 1.5m
-                longLoadMessage: "Scanning for EmailAudit..."
+                // longLoadMessage: "Scanning for EmailAudit..."
             }
         case 'JSParser':
             return {
                 minDuration: 6000,     // 5s
                 maxDuration: 240000,    // 4m
                 estimatedDuration: 40000, // 1.5m
-                longLoadMessage: "Scanning for JSParser..."
+                // longLoadMessage: "Scanning for JSParser..."
             }
         case 'technologies':
             return {
                 minDuration: 2000,     // 5s
                 maxDuration: 6000,    // 4m
                 estimatedDuration: 20000, // 1.5m
-                longLoadMessage: "Scanning for technologies..."
+                // longLoadMessage: "Scanning for technologies..."
             }
         default:
             return {
                 minDuration: 5000,      // 5s
                 maxDuration: 180000,    // 3m
                 estimatedDuration: 60000, // 1m
-                longLoadMessage: "Scan in progress. Please wait..."
+                // longLoadMessage: "Scan in progress. Please wait..."
             };
     }
 };
@@ -131,23 +131,26 @@ const SmartLoader = ({
 
     return (
         <div className="smart-loader-container">
-            <div
+            {/* <div
                 className="progress-bar"
                 style={{
                     width: `${progress}%`,
                     backgroundColor: isTakingLong ? '#ff9800' : '#04D2D2',
                     transition: progress < 5 ? 'none' : 'width 0.3s ease' // No transition at very start
                 }}
-            ></div>
-
-            {isTakingLong && (
+            ></div> */}
+            <span className='text-[#04D2D2]' style={{fontWeight: 'bold'}}>{progress.toFixed(2)}%</span>
+            <div className="w-full bg-gray-400 rounded-full h-4 overflow-hidden">
+                <div className="h-full bg-[#04D2D2] animate-stripes progress-bar" style={{width: `${progress}%`, transition: progress < 5 ? 'none' : 'width 0.3s ease'}}></div>
+            </div>
+            {/* {isTakingLong && (
                 <div className="long-load-message">
                     {longLoadMessage}
                     {progress < 50 && (
                         <span className="blinking-dots">...</span>
                     )}
                 </div>
-            )}
+            )} */}
         </div>
     );
 };

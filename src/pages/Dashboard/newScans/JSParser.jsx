@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import apiInstance from '../../../api/instance';
 import SmartLoader from '../../../components/Loader/SmartLoader';
@@ -6,12 +6,18 @@ import SmartLoader from '../../../components/Loader/SmartLoader';
 const JSParser = () => {
     const [url, setUrl] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [results, setResults] = useState(null);
+    const [results, setResults] = useState([]);
     const [error, setError] = useState(null);
     const [scanStartTime, setScanStartTime] = useState(null);
     const [scanEndTime, setScanEndTime] = useState(null);
     const [scanDuration, setScanDuration] = useState(null);
     const [scanStatus, setScanStatus] = useState('Ready to start scan');
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const id = localStorage.getItem('userId');
+        setUserId(id)
+    })
 
 
     const scanUrl = async () => {
@@ -38,6 +44,7 @@ const JSParser = () => {
             }
 
             const response = await apiInstance.post('/api/newScans/JSParser', {
+                userId,
                 domain
             }, {
                 headers: {
@@ -134,7 +141,7 @@ const JSParser = () => {
 
             {/* Results Section */}
             <div className="space-y-4">
-                {results.results.map((result, index) => (
+                {results?.results?.length > 0 && results.results.map((result, index) => (
                     <div
                         key={index}
                         className="p-4 rounded border text-gray-400"
@@ -147,14 +154,15 @@ const JSParser = () => {
                         <div
                             className="whitespace-pre-wrap bg-gray-900 p-3 rounded text-gray-300 font-mono text-sm overflow-auto"
                             style={{
-                                maxHeight: '300px',  // Fixed height with scroll
-                                wordBreak: 'break-word'  // Break long words
+                                maxHeight: '300px',
+                                wordBreak: 'break-word'
                             }}
                         >
                             {result.secrets || "No secrets found"}
                         </div>
                     </div>
                 ))}
+
             </div>
             {/* Scan Status */}
             {isLoading && !results && (

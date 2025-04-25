@@ -113,157 +113,157 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         {/* Protected Routes (Wrapped with Layout) */}
-        {/* <Route element={<ProtectedRoute />}> */}
-        <Route>
-          <Route
-            path="/dashboard"
-            element={
-              <Layout>
-                <Dashboard_Main />
-              </Layout>
-            }
-          />
+        <Route element={<ProtectedRoute />}>
+          <Route>
+            <Route
+              path="/dashboard"
+              element={
+                <Layout>
+                  <Dashboard_Main />
+                </Layout>
+              }
+            />
 
-          {/* Tools */}
-          <Route
-            path="/tools"
-            element={
-              <Layout>
-                <Tools_Main />
-              </Layout>
-            }
-          />
-          <Route
-            path="/tools/:toolTitle/scan"
-            element={
-              <Layout>
-                <Scaner />
-              </Layout>
-            }
-          />
+            {/* Tools */}
+            <Route
+              path="/tools"
+              element={
+                <Layout>
+                  <Tools_Main />
+                </Layout>
+              }
+            />
+            <Route
+              path="/tools/:toolTitle/scan"
+              element={
+                <Layout>
+                  <Scaner />
+                </Layout>
+              }
+            />
 
-          {/* Dynamic subtools route */}
-          <Route
-            path="/tools/:toolTitle"
-            element={
-              <Layout>
-                <SubTool />
-              </Layout>
-            }
-          />
+            {/* Dynamic subtools route */}
+            <Route
+              path="/tools/:toolTitle"
+              element={
+                <Layout>
+                  <SubTool />
+                </Layout>
+              }
+            />
 
-          {/* Reports Route */}
-          <Route
-            path="/reports"
-            element={
-              <Layout>
-                <Reports />
-              </Layout>
-            }
-          />
+            {/* Reports Route */}
+            <Route
+              path="/reports"
+              element={
+                <Layout>
+                  <Reports />
+                </Layout>
+              }
+            />
 
-          <Route
-            path="/scan"
-            element={
-              <Layout>
-                <Scan />
-              </Layout>
-            }
-          />
-          <Route
-            path="/new-scan"
-            element={
-              <Layout>
-                <NewScan />
-              </Layout>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <Layout>
-                <Account />
-              </Layout>
-            }
-          />
-          <Route
-            path="/plans&pricing"
-            element={
-              <Layout>
-                <PricingPlan />
-              </Layout>
-            }
-          />
-          <Route
-            path="/team"
-            element={
-              <Layout>
-                <Team />
-              </Layout>
-            }
-          />
-          <Route
-            path="/assets"
-            element={
-              <Layout>
-                <Asset />
-              </Layout>
-            }
-          />
-          <Route
-            path="/surface"
-            element={
-              <Layout>
-                <AttackSurface />
-              </Layout>
-            }
-          />
+            <Route
+              path="/scan"
+              element={
+                <Layout>
+                  <Scan />
+                </Layout>
+              }
+            />
+            <Route
+              path="/new-scan"
+              element={
+                <Layout>
+                  <NewScan />
+                </Layout>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <Layout>
+                  <Account />
+                </Layout>
+              }
+            />
+            <Route
+              path="/plans&pricing"
+              element={
+                <Layout>
+                  <PricingPlan />
+                </Layout>
+              }
+            />
+            <Route
+              path="/team"
+              element={
+                <Layout>
+                  <Team />
+                </Layout>
+              }
+            />
+            <Route
+              path="/assets"
+              element={
+                <Layout>
+                  <Asset />
+                </Layout>
+              }
+            />
+            <Route
+              path="/surface"
+              element={
+                <Layout>
+                  <AttackSurface />
+                </Layout>
+              }
+            />
 
-          {/* newScans */}
-          <Route path="/new-scan/google-hacking"
-            element={
-              <Layout>
-                <GoogleHacking />
-              </Layout>
-            }
-          />
-          <Route path="/new-scan/whois"
-            element={
-              <Layout>
-                <WHOIS />
-              </Layout>
-            }
-          />
-          <Route path="/new-scan/emailAudit"
-            element={
-              <Layout>
-                <EmailAudit />
-              </Layout>
-            }
-          />
-          <Route path="/new-scan/JSParser"
-            element={
-              <Layout>
-                <JSParser />
-              </Layout>
-            }
-          />
-          <Route path="/new-scan/technologiesScan"
-            element={
-              <Layout>
-                <TechnologyScanner />
-              </Layout>
-            }
-          />
-          <Route path="/new-scan/CORS"
-            element={
-              <Layout>
-                <CORS />
-              </Layout>
-            }
-          />
+            {/* newScans */}
+            <Route path="/new-scan/google-hacking"
+              element={
+                <Layout>
+                  <GoogleHacking />
+                </Layout>
+              }
+            />
+            <Route path="/new-scan/whois"
+              element={
+                <Layout>
+                  <WHOIS />
+                </Layout>
+              }
+            />
+            <Route path="/new-scan/emailAudit"
+              element={
+                <Layout>
+                  <EmailAudit />
+                </Layout>
+              }
+            />
+            <Route path="/new-scan/JSParser"
+              element={
+                <Layout>
+                  <JSParser />
+                </Layout>
+              }
+            />
+            <Route path="/new-scan/technologiesScan"
+              element={
+                <Layout>
+                  <TechnologyScanner />
+                </Layout>
+              }
+            />
+            <Route path="/new-scan/CORS"
+              element={
+                <Layout>
+                  <CORS />
+                </Layout>
+              }
+            />
+          </Route>
         </Route>
-
 
 
         {/* 404 Not Found */}

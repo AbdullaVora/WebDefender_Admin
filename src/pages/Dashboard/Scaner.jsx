@@ -896,10 +896,13 @@ const Scaner = () => {
   //     [];
 
   // Alternatively, with a more compact approach:
+  console.log(data)
   const scanLogs =
     (data && Array.isArray(data) && data[0]?.results?.[0]?.logs) ||
     (data && Array.isArray(data) && data[0]?.results?.logs) ||
     (data && Array.isArray(data) && data[0]?.logs) ||
+    (data && Array.isArray(data) && data[0]?.scanLogs) ||
+    (data && Array.isArray(data) && data?.scanLogs) ||
     [];
 
   console.log("scanlogs: ", scanLogs);
@@ -928,7 +931,7 @@ const Scaner = () => {
                   onClick={handleStartScan}
                   className="bg-[#04D2D2] px-4 py-2 rounded-md"
                 >
-                  {loading ? `Scanning... ${progress}%` : "Start Scan"}
+                  {loading ? "Scanning..." : "Start Scan"}
                 </button>
               )}
               {toggleBtn && (

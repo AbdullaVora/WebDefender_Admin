@@ -75,7 +75,7 @@ const Login = () => {
                     name="email"
                     type="email"
                     required
-                    className="mt-1 block w-full rounded-lg bg-[#1A2C4E] border border-gray-600 text-white px-4 py-3 focus:ring-cyan-400 focus:border-cyan-400"
+                    className="mt-1 block w-[380px] rounded-lg bg-[#1A2C4E] border border-gray-600 text-white px-4 py-3 focus:ring-cyan-400 focus:border-cyan-400"
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={(e) =>
@@ -97,7 +97,7 @@ const Login = () => {
                       name="password"
                       type={showPassword ? "text" : "password"}
                       required
-                      className="block w-full rounded-lg bg-[#1A2C4E] border border-gray-600 text-white px-4 py-3 pr-10 focus:ring-cyan-400 focus:border-cyan-400"
+                      className="block w-[380px] rounded-lg bg-[#1A2C4E] border border-gray-600 text-white px-4 py-3 pr-10 focus:ring-cyan-400 focus:border-cyan-400"
                       placeholder="Enter your password"
                       value={formData.password}
                       onChange={(e) =>

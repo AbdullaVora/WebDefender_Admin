@@ -102,9 +102,32 @@ import CORS from "./pages/Dashboard/newScans/CORS";
 import Team from "./pages/Dashboard/Team";
 import Asset from "./pages/Dashboard/Asset";
 import AttackSurface from "./pages/Dashboard/AttackSurface";
+import { useEffect, useState } from "react";
+import logo2 from './assets/logo2.png';
+
 
 
 function App() {
+
+  const [loader, setLoader] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoader(false);
+    }, 2000); // 2 seconds
+
+    return () => clearTimeout(timer); // cleanup
+  }, []);
+
+  if (loader) {
+    return (
+      <div className="absolute inset-0 flex flex-col justify-center items-center backdrop-blur-xs z-20 bg-[#020B1C]">
+        <img src={logo2} alt="loader" width={300} className="me-7 z-30" />
+        <span className="loader z-30"></span>
+      </div>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>

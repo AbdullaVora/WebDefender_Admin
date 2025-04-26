@@ -17,7 +17,7 @@ const EmailAudit = () => {
     useEffect(() => {
         const id = localStorage.getItem("userId");
         setUserId(id)
-    },[])
+    }, [])
 
     // console.log(userId)
 
@@ -143,20 +143,18 @@ const EmailAudit = () => {
                     </div>
                     <div className="text-gray-400 text-sm">
                         {scanStartTime && (
-                            <span style={{fontWeight: 'bold'}}>Started: {scanStartTime.toLocaleTimeString()}</span>
+                            <span style={{ fontWeight: 'bold' }}>Started: {scanStartTime.toLocaleTimeString()}</span>
                         )}
                         {scanEndTime && (
-                            <span className="ml-6" style={{fontWeight: 'bold'}}>Ended: {scanEndTime.toLocaleTimeString()}</span>
+                            <span className="ml-6" style={{ fontWeight: 'bold' }}>Ended: {scanEndTime.toLocaleTimeString()}</span>
                         )}
                         {scanDuration && (
-                            <span className="ml-6" style={{fontWeight: 'bold'}}>Duration: {scanDuration.toFixed(2)} seconds</span>
+                            <span className="ml-6" style={{ fontWeight: 'bold' }}>Duration: {scanDuration.toFixed(2)} seconds</span>
                         )}
                     </div>
                 </div>
                 {isLoading && (
-                    <div className="mt-2 w-full bg-gray-700 rounded-full h-1.5">
-                        <SmartLoader isLoading="technologies"/>
-                    </div>
+                    <SmartLoader scanType="technologies" isLoading={true} />
                 )}
             </div>
 

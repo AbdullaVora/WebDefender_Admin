@@ -332,8 +332,8 @@ const CORS = () => {
             const urlsToScan = urlFile ? await readFileAsArray(urlFile) : [targetUrl];
             const payloads = payloadFile ? await readFileAsArray(payloadFile) : null;
 
-            const response = await apiInstance.post('/api/newScans/CORS', {
-                urls: urlsToScan,
+            const response = await apiInstance.post('/api/newScans/CORSScan', {
+                domains: urlsToScan,
                 threads,
                 retries,
                 delay,
@@ -419,9 +419,7 @@ const CORS = () => {
                     </div>
                 </div>
                 {isScanning && (
-                    <div className="mt-2 w-full bg-gray-700 rounded-full h-1.5">
-                        <SmartLoader isLoading="CORS"/>
-                    </div>
+                    <SmartLoader scanType="CORS" isLoading={true} />
                 )}
             </div>
 

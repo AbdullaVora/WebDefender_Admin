@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import apiInstance from '../../../api/instance';
 import SmartLoader from '../../../components/Loader/SmartLoader';
+import { FiAlertTriangle, FiClock, FiSearch } from 'react-icons/fi';
 
 const JSParser = () => {
     const [url, setUrl] = useState('');
@@ -13,6 +14,46 @@ const JSParser = () => {
     const [scanDuration, setScanDuration] = useState(null);
     const [scanStatus, setScanStatus] = useState('Ready to start scan');
     const [userId, setUserId] = useState(null);
+
+    const [isScanning, setIsScanning] = useState(false);
+
+
+    // Dummy message states
+    const [showDummyMessage, setShowDummyMessage] = useState(true);
+    const [dummyMessage, setDummyMessage] = useState({
+        title: "Welcome to Technologies Scanner",
+        content: "Enter a target URL above to begin scanning for Technologies vulnerabilities.",
+        icon: <FiSearch className="w-12 h-12 mb-4" style={{ color: '#04D2D2' }} />,
+        color: 'text-gray-300'
+    });
+
+    useEffect(() => {
+        if (isScanning) {
+            setDummyMessage({
+                title: "Scanning in Progress",
+                content: "Please wait while we scan the target URLs...",
+                icon: <FiClock className="w-12 h-12 mb-4 animate-pulse" style={{ color: '#04D2D2' }} />,
+                color: 'text-gray-300'
+            });
+        } else if (error) {
+            setDummyMessage({
+                title: "Error Occurred",
+                content: error,
+                icon: <FiAlertTriangle className="w-12 h-12 mb-4" style={{ color: '#ef4444' }} />,
+                color: 'text-red-400'
+            });
+        } else if (results.length > 0) {
+            setShowDummyMessage(false);
+        } else {
+            setDummyMessage({
+                title: "Welcome to JS Parser Scanner",
+                content: "Enter a target URL above to begin scanning for JS Parser vulnerabilities.",
+                icon: <FiSearch className="w-12 h-12 mb-4" style={{ color: '#04D2D2' }} />,
+                color: 'text-gray-300'
+            });
+        }
+    }, [isScanning, error, results]);
+
 
     useEffect(() => {
         const id = localStorage.getItem('userId');
@@ -26,6 +67,7 @@ const JSParser = () => {
             return;
         }
 
+        setIsScanning(true);
         setError(null);
         setIsLoading(true);
         setScanStartTime(new Date());
@@ -72,6 +114,7 @@ const JSParser = () => {
             setResults(null);
         } finally {
             setIsLoading(false);
+            setIsScanning(false);
         }
     };
 
@@ -128,14 +171,38 @@ const JSParser = () => {
                     </div>
                 </div>
                 {isLoading && (
-                    <div className="mt-2 w-full bg-gray-700 rounded-full h-1.5">
-                        <SmartLoader isLoading="JSParser" />
-                    </div>
+                    <SmartLoader scanType="JSParser" isLoading={true} />
                 )}
             </div>
             {error && (
                 <div className="mb-6 p-4 rounded bg-red-900 text-red-100">
                     {error}
+                </div>
+            )}
+
+            {/* Dummy Message Box (centered) */}
+            {showDummyMessage && (
+                <div className="flex items-center justify-center my-12">
+                    <div
+                        className="max-w-md p-8 rounded-lg border text-center"
+                        style={{
+                            backgroundColor: '#040C1F',
+                            borderColor: '#4C566A'
+                        }}
+                    >
+                        <div className="flex justify-center">
+                            {dummyMessage.icon}
+                        </div>
+                        <h3
+                            className="text-xl font-bold mb-2"
+                            style={{ color: '#04D2D2' }}
+                        >
+                            {dummyMessage.title}
+                        </h3>
+                        <p className={dummyMessage.color}>
+                            {dummyMessage.content}
+                        </p>
+                    </div>
                 </div>
             )}
 

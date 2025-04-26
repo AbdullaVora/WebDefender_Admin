@@ -713,8 +713,8 @@ const Scaner = () => {
                 // Find matching live subdomain info if available
                 const liveSub = Array.isArray(liveSubdomains)
                   ? liveSubdomains.find(
-                      (live) => live && live.subdomain === subdomain
-                    )
+                    (live) => live && live.subdomain === subdomain
+                  )
                   : null;
 
                 const resultItem = {
@@ -798,8 +798,8 @@ const Scaner = () => {
               if (!subdomain) return;
               const liveSub = Array.isArray(liveSubdomains)
                 ? liveSubdomains.find(
-                    (live) => live && live.subdomain === subdomain
-                  )
+                  (live) => live && live.subdomain === subdomain
+                )
                 : null;
               results.push({
                 type: "subdomain",
@@ -837,30 +837,88 @@ const Scaner = () => {
     return 0; // Default case, return no sorting
   });
 
-  console.log("sorted rsult: ", sortedResults);
+  // console.log("sorted rsult: ", sortedResults);
+
+  // const processLogs = (rawLogs) => {
+  //   if (!Array.isArray(rawLogs)) return [];
+
+  //   return rawLogs.map((log) => {
+  //     if (typeof log === "string") {
+  //       // Handle string-based logs (if SQL scan logs are in string format)
+  //       const timestampMatch = log.match(/\[(\d{2}:\d{2}:\d{2})\]/);
+  //       const dateMatch = log.match(/\/(\d{4}-\d{2}-\d{2})\//);
+
+  //       const timestamp = timestampMatch ? timestampMatch[1] : "00:00:00";
+  //       const date = dateMatch
+  //         ? dateMatch[1]
+  //         : new Date().toISOString().split("T")[0];
+
+  //       const event = log.includes("[INFO]")
+  //         ? "INFO"
+  //         : log.includes("[WARNING]")
+  //         ? "WARNING"
+  //         : "LOG";
+  //       const details = log.replace(/\[.*?\]/g, "").trim();
+
+  //       return { timestamp: `${date} ${timestamp}`, event, details };
+  //     }
+
+  //     if (typeof log === "object" && log.timestamp && log.event) {
+  //       // Handle object-based logs (like in subdomain scan)
+  //       const timestamp = new Date(log.timestamp)
+  //         .toISOString()
+  //         .replace("T", " ")
+  //         .split(".")[0];
+  //       return {
+  //         timestamp,
+  //         event: log.event.toUpperCase(),
+  //         details: log.details || "No details provided",
+  //       };
+  //     }
+
+  //     return {
+  //       timestamp: "Unknown",
+  //       event: "LOG",
+  //       details: JSON.stringify(log),
+  //     };
+  //   });
+  // };
+
 
   const processLogs = (rawLogs) => {
+    if (!rawLogs) return [];
+
+    // If logs come as a single string, split into lines
+    if (typeof rawLogs === "string") {
+      rawLogs = rawLogs.split('\n').filter(line => line.trim());
+    }
+
     if (!Array.isArray(rawLogs)) return [];
 
     return rawLogs.map((log) => {
       if (typeof log === "string") {
         // Handle string-based logs (if SQL scan logs are in string format)
-        const timestampMatch = log.match(/\[(\d{2}:\d{2}:\d{2})\]/);
-        const dateMatch = log.match(/\/(\d{4}-\d{2}-\d{2})\//);
-
-        const timestamp = timestampMatch ? timestampMatch[1] : "00:00:00";
-        const date = dateMatch
-          ? dateMatch[1]
-          : new Date().toISOString().split("T")[0];
-
+        const timestampMatch = log.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3})/);
         const event = log.includes("[INFO]")
           ? "INFO"
           : log.includes("[WARNING]")
-          ? "WARNING"
-          : "LOG";
-        const details = log.replace(/\[.*?\]/g, "").trim();
+            ? "WARNING"
+            : log.includes("[ERROR]")
+              ? "ERROR"
+              : "LOG";
 
-        return { timestamp: `${date} ${timestamp}`, event, details };
+        // Extract timestamp or use current time if not found
+        const timestamp = timestampMatch
+          ? timestampMatch[1].replace(',', '.')
+          : new Date().toISOString().replace('T', ' ').split('.')[0];
+
+        // Clean up the details by removing timestamps and log levels
+        const details = log
+          .replace(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}/g, "")
+          .replace(/\[.*?\]/g, "")
+          .trim();
+
+        return { timestamp, event, details };
       }
 
       if (typeof log === "object" && log.timestamp && log.event) {
@@ -877,26 +935,13 @@ const Scaner = () => {
       }
 
       return {
-        timestamp: "Unknown",
+        timestamp: new Date().toISOString().replace('T', ' ').split('.')[0],
         event: "LOG",
         details: JSON.stringify(log),
       };
     });
   };
 
-  console.log("data: ", data);
-  // Extract logs from scanResults
-  // const scanLogs = data[0]?.results[0]?.logs ?? data[0]?.results?.logs ?? data?.[0]?.logs ?? [];
-
-  // const scanData = data && Array.isArray(data) ? data : [];
-  // const firstItem = scanData[0] || {};
-  // const scanLogs = firstItem.results?.[0]?.logs ||
-  //     firstItem.results?.logs ||
-  //     firstItem.logs ||
-  //     [];
-
-  // Alternatively, with a more compact approach:
-  console.log(data)
   const scanLogs =
     (data && Array.isArray(data) && data[0]?.results?.[0]?.logs) ||
     (data && Array.isArray(data) && data[0]?.results?.logs) ||
@@ -905,7 +950,7 @@ const Scaner = () => {
     (data && Array.isArray(data) && data?.scanLogs) ||
     [];
 
-  console.log("scanlogs: ", scanLogs);
+  // console.log("scanlogs: ", scanLogs);
   const logs = processLogs(scanLogs);
 
   return (
@@ -949,14 +994,12 @@ const Scaner = () => {
             <span className="text-[#04D2D2] font-medium">Custom Selection</span>
             <button
               onClick={() => setEnabled(!enabled)}
-              className={`relative w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ease-in-out ${
-                enabled ? "bg-[#04D2D2]" : "bg-gray-700"
-              }`}
+              className={`relative w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ease-in-out ${enabled ? "bg-[#04D2D2]" : "bg-gray-700"
+                }`}
             >
               <div
-                className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${
-                  enabled ? "translate-x-6" : "translate-x-0"
-                }`}
+                className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${enabled ? "translate-x-6" : "translate-x-0"
+                  }`}
               />
             </button>
           </div>
@@ -1006,11 +1049,10 @@ const Scaner = () => {
               logs.map((log, index) => (
                 <p
                   key={index}
-                  className={`${
-                    log.event === "WARNING"
+                  className={`${log.event === "WARNING"
                       ? "text-yellow-400"
                       : "text-gray-400"
-                  }`}
+                    }`}
                 >
                   [{log.timestamp}] {log.event} - {log.details}
                 </p>

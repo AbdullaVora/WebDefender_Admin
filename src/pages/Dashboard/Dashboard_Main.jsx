@@ -491,6 +491,7 @@
 // export default Dashboard_Main;
 
 import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2"
 import {
   Shield,
   Activity,
@@ -508,6 +509,29 @@ import {
 } from "lucide-react";
 
 const Dashboard_Main = () => {
+
+
+  useEffect(() => {
+    const welcomeShown = localStorage.getItem('welcome_shown');
+  
+    if (!welcomeShown) {
+      Swal.fire({
+        title: 'Welcome to Web Scanner!',
+        text: 'We\'re happy to have you here.',
+        background: '#0b0f1a',
+        color: '#00e0d0',
+        icon: 'success',
+        iconColor: '#00e0d0',
+        timer: 1500, // auto close after 3 seconds
+        timerProgressBar: true, // show progress bar
+        showConfirmButton: false, // hide OK button
+      }).then(() => {
+        localStorage.setItem('welcome_shown', 'true');
+      });
+    }
+  }, []);
+  
+
   // State for scan data with more realistic initial values
   const [scanData, setScanData] = useState({
     scannedAssets: {
@@ -581,7 +605,7 @@ const Dashboard_Main = () => {
       scanData.highAlerts * 5 +
       scanData.mediumAlerts * 2 +
       scanData.lowAlerts * 0.5) /
-      2
+    2
   );
 
   // Function to get risk level
@@ -680,10 +704,10 @@ const Dashboard_Main = () => {
                         riskScore >= 40
                           ? "#EF4444"
                           : riskScore >= 25
-                          ? "#F97316"
-                          : riskScore >= 10
-                          ? "#EAB308"
-                          : "#10B981"
+                            ? "#F97316"
+                            : riskScore >= 10
+                              ? "#EAB308"
+                              : "#10B981"
                       }
                       strokeWidth="10"
                       strokeLinecap="round"
@@ -1031,22 +1055,20 @@ const Dashboard_Main = () => {
               {scanData.recentEvents.map((event, index) => (
                 <div
                   key={event.id}
-                  className={`p-4 ${
-                    index !== scanData.recentEvents.length - 1
+                  className={`p-4 ${index !== scanData.recentEvents.length - 1
                       ? "border-b border-[#1E293B]"
                       : ""
-                  } transition-all duration-200 hover:bg-[#0a1935] cursor-pointer`}
+                    } transition-all duration-200 hover:bg-[#0a1935] cursor-pointer`}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center">
                       <div
-                        className={`h-10 w-10 rounded-full flex items-center justify-center mr-4 ${
-                          event.icon === "network"
+                        className={`h-10 w-10 rounded-full flex items-center justify-center mr-4 ${event.icon === "network"
                             ? "bg-blue-100 text-blue-500"
                             : event.icon === "security"
-                            ? "bg-purple-100 text-purple-500"
-                            : "bg-green-100 text-green-500"
-                        }`}
+                              ? "bg-purple-100 text-purple-500"
+                              : "bg-green-100 text-green-500"
+                          }`}
                       >
                         {event.icon === "network" && (
                           <Globe className="h-5 w-5" />
@@ -1076,13 +1098,12 @@ const Dashboard_Main = () => {
                       </div>
                     </div>
                     <div
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        event.statusColor === "green"
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${event.statusColor === "green"
                           ? "bg-green-100 text-green-800"
                           : event.statusColor === "yellow"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-blue-100 text-blue-800"
+                        }`}
                     >
                       {event.status}
                     </div>

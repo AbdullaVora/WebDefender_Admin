@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import logo from "../../assets/logo.png";
-import { useDispatch } from "react-redux";
+import logo2 from "../../assets/logo2.png";
+import { useDispatch, useSelector } from "react-redux";
 import { register } from "../../store/slices/userSlice";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -14,26 +17,55 @@ const Register = () => {
     confirmPassword: "",
   });
 
+  const { isAuthenticated, loading, error } = useSelector((state) => state.users);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Check if passwords match
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
     dispatch(register(formData));
     console.log("Signup submitted:", formData);
   };
 
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate]);
+
   return (
-    <div className="min-h-screen my bg-[#020B1C] flex items-center justify-center px-4">
-      <div className="max-w-md my-10 w-full space-y-8">
+    <div className="min-h-screen bg-[#020B1C] flex items-center justify-center px-4 relative">
+      {/* Loader Screen - directly using Redux loading state */}
+      {loading && (
+        <div className="absolute inset-0 flex flex-col justify-center items-center backdrop-blur-xs z-20">
+          <img src={logo2} alt="loader" width={300} className="me-7 z-30" />
+          <span className="loader z-30"></span>
+        </div>
+      )}
+
+      <div className={`max-w-md my-10 w-full space-y-8 ${loading ? 'z-10' : 'z-30'}`}>
         <div className="flex justify-center">
-          <img src={logo} alt="" className="w-30" />
+          <img src={logo} alt="WebScanner Logo" className="w-30" />
         </div>
 
-        <div className="bg-[#0A1A3B] rounded-xl p-8 shadow-2xl space-y-6">
+        <div className={`bg-[#0A1A3B] rounded-xl p-8 shadow-2xl space-y-6 ${!loading ? 'backdrop-blur-3xl' : ''}`}>
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white mb-2">
               Create Account
             </h2>
             <p className="text-gray-400">Join WebScanner to get started</p>
           </div>
+
+          {error && (
+            <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-100 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
@@ -50,7 +82,7 @@ const Register = () => {
                 required
                 className="mt-1 block w-full rounded-lg bg-[#1A2C4E] border border-gray-600 text-white px-4 py-3 focus:ring-cyan-400 focus:border-cyan-400"
                 placeholder="Enter your full name"
-                value={formData.fullName}
+                value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
@@ -122,7 +154,7 @@ const Register = () => {
               <input
                 id="confirmPassword"
                 name="confirmPassword"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 className="mt-1 block w-full rounded-lg bg-[#1A2C4E] border border-gray-600 text-white px-4 py-3 focus:ring-cyan-400 focus:border-cyan-400"
                 placeholder="Confirm your password"
@@ -146,11 +178,11 @@ const Register = () => {
                 className="ml-2 block text-sm text-gray-300"
               >
                 I agree to the{" "}
-                <button className="text-cyan-400 hover:text-cyan-300">
+                <button type="button" className="text-cyan-400 hover:text-cyan-300">
                   Terms
                 </button>{" "}
                 and{" "}
-                <button className="text-cyan-400 hover:text-cyan-300">
+                <button type="button" className="text-cyan-400 hover:text-cyan-300">
                   Privacy Policy
                 </button>
               </label>
@@ -158,9 +190,10 @@ const Register = () => {
 
             <button
               type="submit"
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-cyan-400 hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-cyan-400 hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 

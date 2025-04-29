@@ -229,12 +229,11 @@
 // };
 
 // export default CORS;
-
 import React, { useEffect, useState } from 'react';
-import Result_Table from '../../../components/Result_Table';
-import apiInstance from '../../../api/instance';
 import { FiAlertTriangle, FiCheckCircle, FiClock, FiSearch } from 'react-icons/fi';
 import SmartLoader from '../../../components/Loader/SmartLoader';
+import { Switch } from '@headlessui/react';
+import apiInstance from '../../../api/instance';
 
 const CORS = () => {
     const [targetUrl, setTargetUrl] = useState('');
@@ -257,8 +256,8 @@ const CORS = () => {
 
     useEffect(() => {
         const id = localStorage.getItem("userId");
-        setUserId(id)
-    }, [])
+        setUserId(id);
+    }, []);
 
     const handleUrlFileChange = (e) => {
         setUrlFile(e.target.files[0] || null);
@@ -326,45 +325,72 @@ const CORS = () => {
         setScanStartTime(new Date());
         setScanEndTime(null);
         setScanDuration(null);
-        setScanStatus(`Scanning URL: ${targetUrl}...`);
+        setScanStatus(`Scanning URL: ${targetUrl || 'uploaded file'}...`);
 
         try {
-            const urlsToScan = urlFile ? await readFileAsArray(urlFile) : [targetUrl];
-            const payloads = payloadFile ? await readFileAsArray(payloadFile) : null;
+            let urlsToScan = [];
+            if (urlFile) {
+                urlsToScan = await readFileAsArray(urlFile);
+            } else {
+                urlsToScan = [targetUrl];
+            }
 
-            const response = await apiInstance.post('/api/newScans/CORSScan', {
-                domains: urlsToScan,
-                threads,
-                retries,
-                delay,
-                timeout,
-                cookies: cookies || null,
-                // payloads: payloads || null,
-                userId
-            }, {
+            const formData = new FormData();
+            formData.append('domains', JSON.stringify(urlsToScan));
+            formData.append('threads', threads);
+            formData.append('retries', retries);
+            formData.append('delay', delay);
+            formData.append('timeout', timeout);
+            formData.append('userId', userId);
+            if (cookies) formData.append('cookies', cookies);
+            if (payloadFile) formData.append('payloads', payloadFile);
+
+            const response = await apiInstance.post('/api/newScans/CORS', formData, {
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'multipart/form-data',
                 }
             });
 
-            const results = response.data;
             const endTime = new Date();
-
             setScanEndTime(endTime);
             setScanDuration((endTime - scanStartTime) / 1000);
             setScanStatus('Scan completed successfully');
-            setScanResults(results);
+
+            // Handle the response based on your API structure
+            if (response.data && response.data.results) {
+                setScanResults(response.data.results);
+            } else {
+                setError('Unexpected response format from server');
+            }
         } catch (error) {
             console.error('Scan failed:', error);
-            setError(error.message || 'Failed to scan target');
+            const errorMsg = error.response?.data?.detail ||
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to scan target';
+            setError(errorMsg);
             setScanStatus('Scan failed');
         } finally {
             setIsScanning(false);
         }
     };
 
+    // Function to get severity color
+    const getSeverityColor = (severity) => {
+        switch (severity.toLowerCase()) {
+            case 'high':
+                return 'bg-red-900/30 text-red-400';
+            case 'medium':
+                return 'bg-yellow-900/30 text-yellow-400';
+            case 'low':
+                return 'bg-blue-900/30 text-blue-400';
+            default:
+                return 'bg-gray-900/30 text-gray-400';
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-[#0E1427] px-3">
+        <div className="min-h-screen bg-[#0E1427] px-4">
             {/* Header */}
             <h2 className="text-[#04D2D2] border-b-2 border-[#4C566A] my-3 p-3 text-xl font-bold bg-[#040C1F]">
                 CORS Scanner
@@ -424,22 +450,24 @@ const CORS = () => {
             </div>
 
             {/* Custom Selection Toggle */}
-            <div className="mb-3 p-3 rounded border" style={{
+            <div className="mb-3 p-3 rounded border flex items-center justify-between" style={{
                 backgroundColor: '#040C1F',
                 borderColor: '#4C566A'
             }}>
-                <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        id="custom-toggle"
-                        className="h-4 w-4 text-[#04D2D2] focus:ring-[#04D2D2] border-gray-400 rounded"
-                        checked={useCustom}
-                        onChange={() => setUseCustom(!useCustom)}
+                <label htmlFor="custom-toggle" className="block text-gray-300 font-medium">
+                    Custom Selection
+                </label>
+                <Switch
+                    checked={useCustom}
+                    onChange={setUseCustom}
+                    className={`${useCustom ? 'bg-[#04D2D2]' : 'bg-gray-600'}
+                      relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-[#04D2D2]`}
+                >
+                    <span
+                        className={`${useCustom ? 'translate-x-6' : 'translate-x-1'}
+                          inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                     />
-                    <label htmlFor="custom-toggle" className="ml-2 block text-gray-300 font-medium">
-                        Custom Selection
-                    </label>
-                </div>
+                </Switch>
             </div>
 
             {/* Custom Options */}
@@ -449,7 +477,7 @@ const CORS = () => {
                     borderColor: '#4C566A'
                 }}>
                     {/* File Uploads */}
-                    <div className="space-y-4 mb-6">
+                    <div className="space-y-4 flex gap-10 mb-6">
                         <div>
                             <label className="block text-gray-300 font-medium mb-1">Upload URL file</label>
                             <div className="flex items-center">
@@ -597,27 +625,78 @@ const CORS = () => {
 
             {/* Results Section */}
             {scanResults.length > 0 && !isScanning && (
-                <div className="space-y-8">
-                    <h2 className="text-2xl font-semibold" style={{ color: '#04D2D2' }}>
-                        CORS Scan Results for <span className="text-gray-300">{targetUrl}</span>
+                <div className="space-y-4 mb-5">
+                    <h2 className="text-xl font-semibold" style={{ color: '#04D2D2' }}>
+                        CORS Scan Results for <span className="text-gray-300">{targetUrl || 'uploaded file'}</span>
                     </h2>
 
                     <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#4C566A' }}>
                         <div className="p-4" style={{ backgroundColor: '#040C1F' }}>
                             <h3 className="text-lg font-medium mb-3" style={{ color: '#04D2D2' }}>Scan Results</h3>
                             <div className="overflow-x-auto">
-                                <Result_Table data={scanResults} className="w-full" />
+                                <table className="min-w-full divide-y divide-gray-700">
+                                    <thead className="bg-[#0E1427]">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                Host
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                Origin
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                Classification
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                Severity
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                Description
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                Exploitation
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                allow_credentials
+                                            </th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                                                HTTP Status
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-700">
+                                        {scanResults.map((result, index) => (
+                                            <tr key={index} className="hover:bg-[#0E1427]">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-300">
+                                                    {result.host}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-300">
+                                                    {result.origin}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                                                    {result.classification}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getSeverityColor(result.severity)}`}>
+                                                        {result.severity}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-400">
+                                                    {result.description}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-400">
+                                                    {result.exploitation}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-400">
+                                                    {result.allow_credentials}
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-gray-400">
+                                                    {result.http_status}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* JSON Output */}
-                    <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#4C566A' }}>
-                        <div className="p-4" style={{ backgroundColor: '#040C1F' }}>
-                            <h3 className="text-lg font-medium mb-3" style={{ color: '#04D2D2' }}>JSON Output</h3>
-                            <pre className="p-4 rounded overflow-x-auto text-gray-400" style={{ backgroundColor: '#0E1427' }}>
-                                {JSON.stringify(scanResults, null, 2)}
-                            </pre>
                         </div>
                     </div>
                 </div>

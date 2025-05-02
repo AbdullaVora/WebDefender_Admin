@@ -337,9 +337,9 @@ const NewScan = () => {
 
   const tabs = [
     { id: 'quick-start', label: 'Quick start' },
-    { id: 'reuse-tools', label: 'Reuse tools' },
+    { id: 'recon-tools', label: 'Recon tools' },
     { id: 'favorites', label: 'Favorites' },
-    { id: 'urls', label: 'URLs' }
+    // { id: 'urls', label: 'URLs' }
   ];
 
   const scanningTools = [

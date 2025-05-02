@@ -507,13 +507,14 @@ import {
   Bell,
   User,
 } from "lucide-react";
+import apiInstance from "../../api/instance";
 
 const Dashboard_Main = () => {
 
 
   useEffect(() => {
     const welcomeShown = localStorage.getItem('welcome_shown');
-  
+
     if (!welcomeShown) {
       Swal.fire({
         title: 'Welcome to Web Scanner!',
@@ -530,7 +531,7 @@ const Dashboard_Main = () => {
       });
     }
   }, []);
-  
+
 
   // State for scan data with more realistic initial values
   const [scanData, setScanData] = useState({
@@ -579,6 +580,15 @@ const Dashboard_Main = () => {
 
   // For time display
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [userId, setUserId] = useState(null);
+  const [ipCount, setIpCount] = useState(0);
+  const [techCount, setTechCount] = useState(0);
+
+  useEffect(() => {
+    const id = localStorage.getItem("userId");
+    setUserId(id)
+  }, [])
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -587,6 +597,198 @@ const Dashboard_Main = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Fetch data from API
+  useEffect(() => {
+    if (!userId) return; // 🚫 Skip if userId isn't ready
+
+    const fetchReports = async () => {
+      try {
+        // setLoading(true);
+        const response = await apiInstance.get('/api/reports', {
+          params: {
+            userId
+          }
+        });
+        const data = response.data;
+        // setApiData(data);
+
+        const allReports = transformApiData(data);
+        console.log("All reports:", allReports); // Debugging line
+        const filteredIPReports = allReports.filter(report => report.tool === "WAF Detector");
+
+        //count ip address
+        let totalIp = 0;
+        filteredIPReports.forEach(item => {
+          const ip = item?.rawData?.IP_Information?.IPAddress;
+          if (ip) totalIp += 1;
+        });
+
+        setIpCount(totalIp);
+
+        // Count all technologies across all categories
+        const filteredTechReports = allReports.filter(report => report.tool === "Technologies_Report" || report.tool === "Technologies Report" )
+        let totalTech = 0;
+        filteredTechReports.forEach(item => {
+          const detectedTech = item?.rawData?.detected_technologies;
+          if (detectedTech) {
+            // Sum up technologies from all categories
+            Object.values(detectedTech).forEach(category => {
+              if (Array.isArray(category)) {
+                totalTech += category.length;
+              }
+            });
+          }
+        });
+        setTechCount(totalTech);
+        // setLoading(false);
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+        // setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, [userId]); // ✅ Trigger this effect only after userId is set
+
+  const transformApiData = (data) => {
+    console.log("Transforming API data:", data); // Debugging line
+    const allReports = [];
+
+    // Process each report type and map to common format
+    Object.keys(data).forEach(reportType => {
+      data[reportType].forEach(report => {
+        // Extract target from different possible locations in the report
+        const target = report.results?.[0]?.target ||
+          report.results?.[0]?.url ||
+          report.results?.[0]?.domain ||
+          report.url ||
+          report.domain ||
+          report.target ||
+          (report.targets && report.targets[0]) ||  // Fixed: Add null check
+          report.Target_URL ||
+          report["Target URL"] ||
+          report.data?.domain_name ||
+          report[0]?.data ||
+          "Unknown target";
+
+        console.log("Extracted target:", target);
+
+
+        const commonReport = {
+          id: report._id || report.id || `RPT-${Math.random().toString(36).substr(2, 8)}`,
+          tool: getToolName(reportType),
+          status: getStatus(report, reportType),
+          timestamp: report.created_time,
+          duration: report.duration || `${Math.floor(Math.random() * 20) + 1}m ${Math.floor(Math.random() * 60)}s`,
+          target: target,  // Use the extracted target
+          findings: report.vulnerabilities ? report.vulnerabilities.length :
+            (report.issues ? report.issues.length :
+              (report.files ? report.files.length :
+                (report.results?.[0]?.subdomains ? report.results?.[0]?.subdomains.length : 0))),
+          severity: determineSeverity(report),
+          details: generateDetails(report, reportType),
+          rawData: report
+        };
+
+        allReports.push(commonReport);
+      });
+    });
+
+    return allReports;
+  };
+
+  // Helper function to get tool name based on report type
+  const getToolName = (reportType) => {
+    const toolNames = {
+      subdomain_reports: "Subdomain Scanner",
+      sql_reports: "SQL Injection Scanner",
+      hidden_files: "Hidden Files Finder",
+      Xss_Report: "XSS Scanner",
+      Waf_Report: "WAF Detector",
+      JsParser_Report: "JavaScript Analyzer",
+      EmailAudit_Report: "Email Security Auditor",
+      Whois_Report: "Whois Lookup",  // Add this line
+    };
+    return toolNames[reportType] || reportType;
+  };
+
+  const getStatus = (report, reportType) => {
+    const statusMap = {
+      sql_reports: "success",
+      hidden_files: "success",
+      JsParser_Report: "success",
+      EmailAudit_Report: "success",
+      Whois_Report: "success",  // Whois reports are always successful
+    };
+
+    if (reportType === "subdomain_reports") {
+      const subdomainLength = report?.results?.[0]?.subdomains?.length || 0;
+      return subdomainLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "Xss_Report") {
+      const xssLength = report?.vulnerabilities?.length || 0;
+      return xssLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "Waf_Report") {
+      const allFieldsPresent =
+        (report?.IP_Information ?? false) &&
+        (report?.WAF_Detection_Result ?? false) &&
+        (report?.Server ?? false) &&
+        (report?.Protection_Methods ?? false) &&
+        (report?.Status_Code ?? false);
+
+      console.log("waf", allFieldsPresent);
+
+      return allFieldsPresent ? "Passed" : "Failed";
+    }
+
+
+
+    return statusMap[reportType] || "unknown";
+  };
+
+  // Determine severity based on report content
+  const determineSeverity = (report) => {
+    if (report.severity) return report.severity;
+
+    if (report.vulnerabilities && report.vulnerabilities.length > 0) {
+      const hasCritical = report.vulnerabilities.some(v => v.severity === 'critical') || report.vulnerabilities.length > 70;
+      if (hasCritical) return "Critical";
+
+      const hasHigh = report.vulnerabilities.some(v => v.severity === 'high') || report.vulnerabilities.length > 40;
+      if (hasHigh) return "High";
+
+      const hasMedium = report.vulnerabilities.some(v => v.severity === 'medium') || report.vulnerabilities.length > 20;
+      if (hasMedium) return "Medium";
+
+      return "Low";
+    }
+
+    return "None";
+  };
+
+  // Generate details text based on report type
+  const generateDetails = (report, reportType) => {
+    switch (reportType) {
+      case 'subdomain_reports':
+        return `Found ${report.results?.[0]?.subdomains ? report.results?.[0]?.subdomains.length : 0} subdomains`;
+      case 'sql_reports':
+        return `Found ${report.vulnerabilities ? report.vulnerabilities.length : 0} SQL injection vulnerabilities`;
+      case 'hidden_files':
+        return `Found ${report.files ? report.files.length : 0} hidden files/directories`;
+      case 'Xss_Report':
+        return `Found ${report.vulnerabilities ? report.vulnerabilities.length : 0} XSS vulnerabilities`;
+      case 'Waf_Report':
+        return `WAF detection results for ${report.target || 'unknown target'}`;
+      case 'JsParser_Report':
+        return `Found ${report.issues ? report.issues.length : 0} JavaScript security issues`;
+      case 'EmailAudit_Report':
+        return `Email security audit results with ${report.issues ? report.issues.length : 0} findings`;
+      case 'Whois_Report':
+        return `Whois lookup results for ${report.data?.domain_name || 'unknown target'}`;
+      default:
+        return "Security scan completed";
+    }
+  };
 
   // Calculate percentages for the circle graphs
   const scannedPercentage =
@@ -831,7 +1033,7 @@ const Dashboard_Main = () => {
             <div className="grid grid-cols-6 gap-4">
               {[
                 {
-                  value: "3",
+                  value: ipCount,
                   label: "IP ADDRESSES",
                   icon: <Server className="h-6 w-6" />,
                 },
@@ -841,22 +1043,22 @@ const Dashboard_Main = () => {
                   icon: <Globe className="h-6 w-6" />,
                 },
                 {
-                  value: "12",
+                  value: "0",
                   label: "PORTS",
                   icon: <Database className="h-6 w-6" />,
                 },
                 {
-                  value: "4",
+                  value: "0",
                   label: "PROTOCOLS",
                   icon: <Activity className="h-6 w-6" />,
                 },
                 {
-                  value: "5",
+                  value: techCount,
                   label: "SERVICES",
                   icon: <Zap className="h-6 w-6" />,
                 },
                 {
-                  value: "8",
+                  value: techCount,
                   label: "TECHNOLOGIES",
                   icon: <Shield className="h-6 w-6" />,
                 },
@@ -1056,18 +1258,18 @@ const Dashboard_Main = () => {
                 <div
                   key={event.id}
                   className={`p-4 ${index !== scanData.recentEvents.length - 1
-                      ? "border-b border-[#1E293B]"
-                      : ""
+                    ? "border-b border-[#1E293B]"
+                    : ""
                     } transition-all duration-200 hover:bg-[#0a1935] cursor-pointer`}
                 >
                   <div className="flex justify-between items-center">
                     <div className="flex items-center">
                       <div
                         className={`h-10 w-10 rounded-full flex items-center justify-center mr-4 ${event.icon === "network"
-                            ? "bg-blue-100 text-blue-500"
-                            : event.icon === "security"
-                              ? "bg-purple-100 text-purple-500"
-                              : "bg-green-100 text-green-500"
+                          ? "bg-blue-100 text-blue-500"
+                          : event.icon === "security"
+                            ? "bg-purple-100 text-purple-500"
+                            : "bg-green-100 text-green-500"
                           }`}
                       >
                         {event.icon === "network" && (
@@ -1099,10 +1301,10 @@ const Dashboard_Main = () => {
                     </div>
                     <div
                       className={`px-3 py-1 rounded-full text-xs font-medium ${event.statusColor === "green"
-                          ? "bg-green-100 text-green-800"
-                          : event.statusColor === "yellow"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
+                        ? "bg-green-100 text-green-800"
+                        : event.statusColor === "yellow"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-blue-100 text-blue-800"
                         }`}
                     >
                       {event.status}

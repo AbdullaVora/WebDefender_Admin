@@ -20,6 +20,8 @@ export const register = createAsyncThunk(
             if (response.data?.token) {
                 localStorage.setItem("auth_token", response.data.token);
                 localStorage.setItem("userId", response.data.user_id);
+                localStorage.setItem("username", response.data.data.name);
+                localStorage.setItem("useremail", response.data.data.email);
                 return response.data;
             }
 
@@ -45,12 +47,38 @@ export const login = createAsyncThunk(
                 const token = response.data?.token;
                 localStorage.setItem("auth_token", token);
                 localStorage.setItem("userId", response.data.user_id);
+                localStorage.setItem("username", response.data.data.name);
+                localStorage.setItem("useremail", response.data.data.email);
             } else {
                 return rejectWithValue("Inavalid email/password");
             }
             return response.data;
         } catch (error) {
             return rejectWithValue(error.message || "Error login");
+        }
+    }
+);
+
+export const updateUser = createAsyncThunk(
+    "auth/updateUser",
+    async (data, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem("auth_token");
+            const userId = localStorage.getItem("userId");
+            const response = await apiInstance.put(`/api/auth/update/${userId}`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (response.status === 200) {
+                localStorage.setItem("username", response.data.data.name);
+                localStorage.setItem("useremail", response.data.data.email);
+                return response.data;
+            } else {
+                return rejectWithValue("Failed to update user data");
+            }
+        } catch (error) {
+            return rejectWithValue(error.message || "Error updating user data");
         }
     }
 );
@@ -94,6 +122,21 @@ const userSlices = createSlice({
             .addCase(login.rejected, (state, action) => {
                 state.loading = false;
                 (state.isAuthenticated = false), (state.error = action.payload);
+            })
+            .addCase(updateUser.pending, (state, action) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateUser.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.users.findIndex(user => user.id === action.payload.data._id);
+                if (index !== -1) {
+                    state.users[index] = action.payload;
+                }
+            })
+            .addCase(updateUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     },
 });

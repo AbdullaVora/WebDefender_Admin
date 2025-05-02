@@ -270,11 +270,13 @@
 
 // export default PlanDetails;
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Check, X, HelpCircle, ChevronRight } from "lucide-react";
 
 const PlanDetails = () => {
+ 
+
   return (
     <div className="max-w-6xl mx-auto">
       {/* Plan Header */}

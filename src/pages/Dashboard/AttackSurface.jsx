@@ -612,7 +612,6 @@
 // };
 
 // export default AttackSurface;
-
 import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
@@ -625,198 +624,306 @@ import {
   Database,
   Code,
   X,
+  Shield,
+  Cloud,
+  Lock,
+  Network,
+  HardDrive,
+  Cpu,
+  ShieldCheck,
+  ShieldOff,
+  Wifi,
+  WifiOff,
+  Activity,
+  AlertCircle,
 } from "lucide-react";
 import PageTitle from "../../components/PageTitle";
+import apiInstance from "../../api/instance";
+
+// Technology icon mapping
+const technologyIcons = {
+  "Cloudflare": <Cloud size={16} className="text-blue-400" />,
+  "Nginx": <Server size={16} className="text-green-500" />,
+  "Apache": <Server size={16} className="text-red-500" />,
+  "IIS": <Server size={16} className="text-purple-500" />,
+  "MySQL": <Database size={16} className="text-orange-500" />,
+  "MongoDB": <Database size={16} className="text-green-400" />,
+  "SQL Server": <Database size={16} className="text-red-400" />,
+  "PHP": <Code size={16} className="text-blue-500" />,
+  "Java": <Code size={16} className="text-red-500" />,
+  "JavaScript": <Code size={16} className="text-yellow-400" />,
+  "React": <Code size={16} className="text-blue-300" />,
+  "jQuery": <Code size={16} className="text-indigo-500" />,
+  "WordPress": <Globe size={16} className="text-blue-500" />,
+  "OpenSSH": <Server size={16} className="text-yellow-500" />,
+  "Ubuntu": <HardDrive size={16} className="text-orange-500" />,
+  "Windows Server": <Server size={16} className="text-blue-500" />,
+  "Tomcat": <Server size={16} className="text-yellow-500" />,
+  "Spring": <Code size={16} className="text-green-500" />,
+  "WAF": <ShieldCheck size={16} className="text-green-500" />,
+  "Firewall": <Shield size={16} className="text-orange-500" />,
+  "CDN": <Network size={16} className="text-blue-400" />,
+  "DDoS Protection": <Activity size={16} className="text-red-500" />,
+  "Unknown": <AlertCircle size={16} className="text-gray-500" />,
+  "Rate Limiting": <Shield size={16} className="text-yellow-500" />,
+  "Captcha": <Lock size={16} className="text-purple-500" />,
+};
 
 const AttackSurface = () => {
-  // State management
+  const [userId, setUserId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [expanded, setExpanded] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [liveFeed, setLiveFeed] = useState(true);
   const [filteredItems, setFilteredItems] = useState([]);
+  const [filteredIPReports, setFilteredIPReports] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [activeFilters, setActiveFilters] = useState({
     os: [],
     protocol: [],
-    duration: [],
+    status: [],
   });
 
-  // Initial data
-  const surfaceItems = [
-    {
-      id: "1.2.3.4:443",
-      ipAddress: "1.2.3.4",
-      netblock: "1.2.3.0/24",
-      service: "HTTPS",
-      os: "Linux",
-      port: 443,
-      protocol: "TCP",
-      duration: "Always on",
-      url: "https://example.com",
-      technologies: [
-        {
-          name: "Nginx",
-          icon: <Server size={16} className="text-green-500" />,
-        },
-        { name: "PHP", icon: <Code size={16} className="text-blue-500" /> },
-        {
-          name: "MySQL",
-          icon: <Database size={16} className="text-orange-500" />,
-        },
-        {
-          name: "jQuery",
-          icon: <Code size={16} className="text-indigo-500" />,
-        },
-        { name: "React", icon: <Code size={16} className="text-blue-300" /> },
-      ],
-      vulnerabilityScore: "High",
-    },
-    {
-      id: "5.6.7.8:80",
-      ipAddress: "5.6.7.8",
-      netblock: "5.6.7.0/24",
-      service: "HTTP",
-      os: "Windows",
-      port: 80,
-      protocol: "TCP",
-      duration: "Intermittent",
-      url: "http://test.example.com",
-      technologies: [
-        { name: "Apache", icon: <Server size={16} className="text-red-500" /> },
-        {
-          name: "WordPress",
-          icon: <Globe size={16} className="text-blue-500" />,
-        },
-      ],
-      vulnerabilityScore: "Medium",
-    },
-    {
-      id: "9.10.11.12:22",
-      ipAddress: "9.10.11.12",
-      netblock: "9.10.11.0/24",
-      service: "SSH",
-      os: "Linux",
-      port: 22,
-      protocol: "TCP",
-      duration: "Always on",
-      url: "ssh://admin@example.org",
-      technologies: [
-        {
-          name: "OpenSSH",
-          icon: <Server size={16} className="text-yellow-500" />,
-        },
-        {
-          name: "Ubuntu",
-          icon: <Server size={16} className="text-orange-500" />,
-        },
-      ],
-      vulnerabilityScore: "Low",
-    },
-    {
-      id: "13.14.15.16:3389",
-      ipAddress: "13.14.15.16",
-      netblock: "13.14.0.0/16",
-      service: "RDP",
-      os: "Windows Server",
-      port: 3389,
-      protocol: "TCP/UDP",
-      duration: "Business Hours",
-      url: "rdp://example.net",
-      technologies: [
-        {
-          name: "Windows Server",
-          icon: <Server size={16} className="text-blue-500" />,
-        },
-        { name: "IIS", icon: <Globe size={16} className="text-gray-500" /> },
-        {
-          name: "SQL Server",
-          icon: <Database size={16} className="text-red-400" />,
-        },
-      ],
-      vulnerabilityScore: "High",
-    },
-    {
-      id: "17.18.19.20:8080",
-      ipAddress: "17.18.19.20",
-      netblock: "17.18.19.0/24",
-      service: "HTTP-ALT",
-      os: "Linux",
-      port: 8080,
-      protocol: "TCP",
-      duration: "Always on",
-      url: "http://api.example.com:8080",
-      technologies: [
-        {
-          name: "Tomcat",
-          icon: <Server size={16} className="text-yellow-500" />,
-        },
-        { name: "Java", icon: <Code size={16} className="text-red-500" /> },
-        { name: "Spring", icon: <Code size={16} className="text-green-500" /> },
-        {
-          name: "MongoDB",
-          icon: <Database size={16} className="text-green-400" />,
-        },
-      ],
-      vulnerabilityScore: "Medium",
-    },
-    {
-      id: "21.22.23.24:53",
-      ipAddress: "21.22.23.24",
-      netblock: "21.22.23.0/24",
-      service: "DNS",
-      os: "FreeBSD",
-      port: 53,
-      protocol: "UDP",
-      duration: "Always on",
-      url: "dns://ns1.example.com",
-      technologies: [
-        {
-          name: "BIND",
-          icon: <Server size={16} className="text-purple-500" />,
-        },
-        {
-          name: "FreeBSD",
-          icon: <Server size={16} className="text-red-500" />,
-        },
-      ],
-      vulnerabilityScore: "Low",
-    },
-    {
-      id: "25.26.27.28:25",
-      ipAddress: "25.26.27.28",
-      netblock: "25.26.0.0/16",
-      service: "SMTP",
-      os: "CentOS",
-      port: 25,
-      protocol: "TCP",
-      duration: "Intermittent",
-      url: "smtp://mail.example.com",
-      technologies: [
-        {
-          name: "Postfix",
-          icon: <Server size={16} className="text-blue-500" />,
-        },
-        {
-          name: "CentOS",
-          icon: <Server size={16} className="text-green-500" />,
-        },
-      ],
-      vulnerabilityScore: "Medium",
-    },
-  ];
+  // Fetch data from API
+  useEffect(() => {
+    const id = localStorage.getItem("userId");
+    if (!id) return;
+    setUserId(id);
+  }, []);
 
-  // Extract all possible filter values
-  const filterOptions = {
-    os: [...new Set(surfaceItems.map((item) => item.os))],
-    protocol: [...new Set(surfaceItems.map((item) => item.protocol))],
-    duration: [...new Set(surfaceItems.map((item) => item.duration))],
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchReports = async () => {
+      try {
+        setLoading(true);
+        const response = await apiInstance.get('/api/reports', {
+          params: { userId }
+        });
+        const data = response.data;
+        const allReports = transformApiData(data);
+        const wafReports = allReports.filter(report => report.tool === "WAF Detector");
+        const techReport = allReports.filter(report => report.tool === "Technologies Scanner");
+        const ipReports = allReports.filter(report => report.tool !== "WAF Detector" && report.tool !== "Technologies Scanner");
+        console.log("IP Reports:", ipReports); // Debugging line
+        setFilteredIPReports(wafReports);
+        setFilteredItems(processWafReports(wafReports));
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, [userId]);
+
+  const transformApiData = (data) => {
+    console.log("Transforming API data:", data); // Debugging line
+    const allReports = [];
+
+    // Process each report type and map to common format
+    Object.keys(data).forEach(reportType => {
+      data[reportType].forEach(report => {
+        // Extract target from different possible locations in the report
+        const target = report.results?.[0]?.target ||
+          report.results?.[0]?.url ||
+          report.results?.[0]?.domain ||
+          report.url ||
+          report.domain ||
+          report.target ||
+          (report.targets && report.targets[0]) ||  // Fixed: Add null check
+          report.Target_URL ||
+          report["Target URL"] ||
+          report.data?.domain_name ||
+          report[0]?.data ||
+          "Unknown target";
+
+        console.log("Extracted target:", target);
+
+
+        const commonReport = {
+          id: report._id || report.id || `RPT-${Math.random().toString(36).substr(2, 8)}`,
+          tool: getToolName(reportType),
+          status: getStatus(report, reportType),
+          timestamp: report.created_time,
+          duration: report.duration || `${Math.floor(Math.random() * 20) + 1}m ${Math.floor(Math.random() * 60)}s`,
+          target: target,  // Use the extracted target
+          findings: report.vulnerabilities ? report.vulnerabilities.length :
+            (report.issues ? report.issues.length :
+              (report.files ? report.files.length :
+                (report.results?.[0]?.subdomains ? report.results?.[0]?.subdomains.length : 0))),
+          severity: determineSeverity(report),
+          details: generateDetails(report, reportType),
+          rawData: report
+        };
+
+        allReports.push(commonReport);
+      });
+    });
+
+    return allReports;
+  };
+
+  // Helper function to get tool name based on report type
+  const getToolName = (reportType) => {
+    const toolNames = {
+      subdomain_reports: "Subdomain Scanner",
+      sql_reports: "SQL Injection Scanner",
+      hidden_files: "Hidden Files Finder",
+      Xss_Report: "XSS Scanner",
+      Waf_Report: "WAF Detector",
+      JsParser_Report: "JavaScript Analyzer",
+      EmailAudit_Report: "Email Security Auditor",
+      Whois_Report: "Whois Lookup",  // Add this line
+    };
+    return toolNames[reportType] || reportType;
+  };
+
+  const getStatus = (report, reportType) => {
+    const statusMap = {
+      sql_reports: "success",
+      hidden_files: "success",
+      JsParser_Report: "success",
+      EmailAudit_Report: "success",
+      Whois_Report: "success",  // Whois reports are always successful
+    };
+
+    if (reportType === "subdomain_reports") {
+      const subdomainLength = report?.results?.[0]?.subdomains?.length || 0;
+      return subdomainLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "Xss_Report") {
+      const xssLength = report?.vulnerabilities?.length || 0;
+      return xssLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "Waf_Report") {
+      const allFieldsPresent =
+        (report?.IP_Information ?? false) &&
+        (report?.WAF_Detection_Result ?? false) &&
+        (report?.Server ?? false) &&
+        (report?.Protection_Methods ?? false) &&
+        (report?.Status_Code ?? false);
+
+      console.log("waf", allFieldsPresent);
+
+      return allFieldsPresent ? "Passed" : "Failed";
+    }
+
+
+
+    return statusMap[reportType] || "unknown";
+  };
+
+  // Determine severity based on report content
+  const determineSeverity = (report) => {
+    if (report.severity) return report.severity;
+
+    if (report.vulnerabilities && report.vulnerabilities.length > 0) {
+      const hasCritical = report.vulnerabilities.some(v => v.severity === 'critical') || report.vulnerabilities.length > 70;
+      if (hasCritical) return "Critical";
+
+      const hasHigh = report.vulnerabilities.some(v => v.severity === 'high') || report.vulnerabilities.length > 40;
+      if (hasHigh) return "High";
+
+      const hasMedium = report.vulnerabilities.some(v => v.severity === 'medium') || report.vulnerabilities.length > 20;
+      if (hasMedium) return "Medium";
+
+      return "Low";
+    }
+
+    return "None";
+  };
+
+  // Generate details text based on report type
+  const generateDetails = (report, reportType) => {
+    switch (reportType) {
+      case 'subdomain_reports':
+        return `Found ${report.results?.[0]?.subdomains ? report.results?.[0]?.subdomains.length : 0} subdomains`;
+      case 'sql_reports':
+        return `Found ${report.vulnerabilities ? report.vulnerabilities.length : 0} SQL injection vulnerabilities`;
+      case 'hidden_files':
+        return `Found ${report.files ? report.files.length : 0} hidden files/directories`;
+      case 'Xss_Report':
+        return `Found ${report.vulnerabilities ? report.vulnerabilities.length : 0} XSS vulnerabilities`;
+      case 'Waf_Report':
+        return `WAF detection results for ${report.target || 'unknown target'}`;
+      case 'JsParser_Report':
+        return `Found ${report.issues ? report.issues.length : 0} JavaScript security issues`;
+      case 'EmailAudit_Report':
+        return `Email security audit results with ${report.issues ? report.issues.length : 0} findings`;
+      case 'Whois_Report':
+        return `Whois lookup results for ${report.data?.domain_name || 'unknown target'}`;
+      default:
+        return "Security scan completed";
+    }
+  };
+
+
+  // Process WAF reports into table format
+  const processWafReports = (reports) => {
+    return reports.map(report => {
+      const rawData = report.rawData || {};
+      const wafInfo = rawData.WAF_Info || {};
+      const ipInfo = rawData.IP_Information || {};
+
+      // Extract technologies
+      const technologies = [];
+      if (rawData.WAF_Detection_Result && rawData.WAF_Detection_Result.length > 0) {
+        technologies.push({
+          name: rawData.WAF_Detection_Result[0],
+          icon: technologyIcons[rawData.WAF_Detection_Result[0]] || technologyIcons["WAF"]
+        });
+      }
+
+      if (rawData.Server && rawData.Server !== "Unknown Server") {
+        technologies.push({
+          name: rawData.Server,
+          icon: technologyIcons[rawData.Server] || technologyIcons["Unknown"]
+        });
+      }
+
+      if (rawData.Protection_Methods) {
+        rawData.Protection_Methods.split(", ").forEach(method => {
+          technologies.push({
+            name: method,
+            icon: technologyIcons[method] || technologyIcons["Unknown"]
+          });
+        });
+      }
+
+      // Determine vulnerability score based on status code
+      let vulnerabilityScore = "None";
+      if (rawData.Status_Code >= 500) {
+        vulnerabilityScore = "High";
+      } else if (rawData.Status_Code >= 400) {
+        vulnerabilityScore = "Medium";
+      } else if (rawData.Status_Code >= 200) {
+        vulnerabilityScore = "Low";
+      }
+
+      return {
+        id: report.id,
+        ipAddress: ipInfo.IPAddress || "Unknown",
+        location: ipInfo.Location || "Unknown",
+        os: ipInfo.ISP ? ipInfo.ISP.split(",")[0] : "Unknown",
+        port: rawData.Status_Code || "Unknown",
+        protocol: "HTTPS", // Default to HTTPS for web services
+        duration: report.duration || "Unknown",
+        url: rawData.Target_URL ? `https://${rawData.Target_URL}` : "#",
+        technologies,
+        vulnerabilityScore,
+        status: report.status,
+        rawData: report.rawData
+      };
+    });
   };
 
   // Apply filters and search
   useEffect(() => {
-    let results = [...surfaceItems];
+    if (filteredIPReports.length === 0) return;
+
+    let results = processWafReports(filteredIPReports);
 
     // Apply search term
     if (searchTerm) {
@@ -824,12 +931,11 @@ const AttackSurface = () => {
       results = results.filter(
         (item) =>
           item.ipAddress.toLowerCase().includes(searchLower) ||
-          item.netblock.toLowerCase().includes(searchLower) ||
+          item.location.toLowerCase().includes(searchLower) ||
           item.os.toLowerCase().includes(searchLower) ||
           item.protocol.toLowerCase().includes(searchLower) ||
-          item.service.toLowerCase().includes(searchLower) ||
           item.port.toString().includes(searchLower) ||
-          new URL(item.url).hostname.toLowerCase().includes(searchLower) ||
+          item.url.toLowerCase().includes(searchLower) ||
           item.technologies.some((tech) =>
             tech.name.toLowerCase().includes(searchLower)
           )
@@ -847,12 +953,22 @@ const AttackSurface = () => {
 
     setFilteredItems(results);
     setCurrentPage(1); // Reset to first page after filtering
-  }, [searchTerm, activeFilters]);
+  }, [searchTerm, activeFilters, filteredIPReports]);
+
+  // Extract all possible filter values
+  const filterOptions = {
+    os: [...new Set(filteredIPReports.map(report => {
+      const ipInfo = report.rawData?.IP_Information || {};
+      return ipInfo.ISP ? ipInfo.ISP.split(",")[0] : "Unknown";
+    }))],
+    protocol: ["HTTP", "HTTPS", "TCP", "UDP"],
+    status: ["Passed", "Failed"],
+  };
 
   // Initial filtered items
-  useEffect(() => {
-    setFilteredItems(surfaceItems);
-  }, []);
+  // useEffect(() => {
+  //   setFilteredItems(surfaceItems);
+  // }, []);
 
   // Toggle expanded state for technologies
   const toggleExpand = (id) => {
@@ -1082,11 +1198,10 @@ const AttackSurface = () => {
             </div>
             <div className="relative">
               <button
-                className={`p-2 rounded-lg ${
-                  showFilterMenu
-                    ? "bg-[#04D2D2] text-[#0E1427]"
-                    : "bg-[#1E293B] text-gray-400 hover:text-[#04D2D2]"
-                } transition-colors relative`}
+                className={`p-2 rounded-lg ${showFilterMenu
+                  ? "bg-[#04D2D2] text-[#0E1427]"
+                  : "bg-[#1E293B] text-gray-400 hover:text-[#04D2D2]"
+                  } transition-colors relative`}
                 onClick={toggleFilterMenu}
               >
                 <Filter size={16} />
@@ -1193,94 +1308,27 @@ const AttackSurface = () => {
           <table className="w-full">
             <thead className="bg-[#0A1121] text-gray-400 text-sm">
               <tr>
-                <th
-                  className="px-4 py-3 text-left cursor-pointer hover:text-[#04D2D2]"
-                  onClick={() => requestSort("ipAddress")}
-                >
-                  <div className="flex items-center gap-1">
-                    IP Address / ID
-                    {sortConfig.key === "ipAddress" && (
-                      <ChevronDown
-                        size={14}
-                        className={`transform ${
-                          sortConfig.direction === "desc" ? "rotate-180" : ""
-                        }`}
-                      />
-                    )}
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-left">Netblock</th>
-                <th
-                  className="px-4 py-3 text-left cursor-pointer hover:text-[#04D2D2]"
-                  onClick={() => requestSort("os")}
-                >
-                  <div className="flex items-center gap-1">
-                    OS
-                    {sortConfig.key === "os" && (
-                      <ChevronDown
-                        size={14}
-                        className={`transform ${
-                          sortConfig.direction === "desc" ? "rotate-180" : ""
-                        }`}
-                      />
-                    )}
-                  </div>
-                </th>
-                <th
-                  className="px-4 py-3 text-left cursor-pointer hover:text-[#04D2D2]"
-                  onClick={() => requestSort("port")}
-                >
-                  <div className="flex items-center gap-1">
-                    Port
-                    {sortConfig.key === "port" && (
-                      <ChevronDown
-                        size={14}
-                        className={`transform ${
-                          sortConfig.direction === "desc" ? "rotate-180" : ""
-                        }`}
-                      />
-                    )}
-                  </div>
-                </th>
-                <th
-                  className="px-4 py-3 text-left cursor-pointer hover:text-[#04D2D2]"
-                  onClick={() => requestSort("protocol")}
-                >
-                  <div className="flex items-center gap-1">
-                    Protocol
-                    {sortConfig.key === "protocol" && (
-                      <ChevronDown
-                        size={14}
-                        className={`transform ${
-                          sortConfig.direction === "desc" ? "rotate-180" : ""
-                        }`}
-                      />
-                    )}
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-left">Duration</th>
+                <th className="px-4 py-3 text-left">IP Address</th>
+                <th className="px-4 py-3 text-left">Location</th>
+                <th className="px-4 py-3 text-left">ISP/OS</th>
+                <th className="px-4 py-3 text-left">Status Code</th>
+                <th className="px-4 py-3 text-left">Protocol</th>
                 <th className="px-4 py-3 text-left">URL</th>
                 <th className="px-4 py-3 text-left">Technologies</th>
-                <th
-                  className="px-4 py-3 text-left cursor-pointer hover:text-[#04D2D2]"
-                  onClick={() => requestSort("vulnerabilityScore")}
-                >
-                  <div className="flex items-center gap-1">
-                    Risk
-                    {sortConfig.key === "vulnerabilityScore" && (
-                      <ChevronDown
-                        size={14}
-                        className={`transform ${
-                          sortConfig.direction === "desc" ? "rotate-180" : ""
-                        }`}
-                      />
-                    )}
-                  </div>
-                </th>
+                <th className="px-4 py-3 text-left">Risk</th>
+                <th className="px-4 py-3 text-left">Status</th>
               </tr>
             </thead>
             <tbody>
-              {currentItems.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="9">
+                    <div className="px-4 py-10 flex justify-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#04D2D2]"></div>
+                    </div>
+                  </td>
+                </tr>
+              ) : currentItems.length > 0 ? (
                 currentItems.map((item) => (
                   <tr
                     key={item.id}
@@ -1292,11 +1340,10 @@ const AttackSurface = () => {
                         {item.ipAddress}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-300">{item.netblock}</td>
+                    <td className="px-4 py-3 text-gray-300">{item.location}</td>
                     <td className="px-4 py-3 text-gray-300">{item.os}</td>
                     <td className="px-4 py-3 text-gray-300">{item.port}</td>
                     <td className="px-4 py-3 text-gray-300">{item.protocol}</td>
-                    <td className="px-4 py-3 text-gray-300">{item.duration}</td>
                     <td className="px-4 py-3">
                       <a
                         href={item.url}
@@ -1304,7 +1351,7 @@ const AttackSurface = () => {
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:text-[#04D2D2] flex items-center gap-1"
                       >
-                        {new URL(item.url).hostname}
+                        {item.url.replace(/^https?:\/\//, '')}
                         <ExternalLink size={14} />
                       </a>
                     </td>
@@ -1344,25 +1391,31 @@ const AttackSurface = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          item.vulnerabilityScore === "High"
-                            ? "bg-red-900 text-red-300"
-                            : item.vulnerabilityScore === "Medium"
+                        className={`px-2 py-1 rounded text-xs ${item.vulnerabilityScore === "High"
+                          ? "bg-red-900 text-red-300"
+                          : item.vulnerabilityScore === "Medium"
                             ? "bg-yellow-900 text-yellow-300"
                             : "bg-green-900 text-green-300"
-                        }`}
+                          }`}
                       >
                         {item.vulnerabilityScore}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${item.status === "Passed"
+                          ? "bg-green-900 text-green-300"
+                          : "bg-red-900 text-red-300"
+                          }`}
+                      >
+                        {item.status}
                       </span>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan="9"
-                    className="px-4 py-6 text-center text-gray-400"
-                  >
+                  <td colSpan="9" className="px-4 py-6 text-center text-gray-400">
                     No results found{" "}
                     {searchTerm
                       ? `for "${searchTerm}"`
@@ -1392,11 +1445,10 @@ const AttackSurface = () => {
 
         <div className="flex items-center gap-4">
           <button
-            className={`bg-[#1E293B] text-white px-3 py-1 rounded-lg transition-colors duration-300 border border-[#2A3A55] ${
-              currentPage > 1
-                ? "hover:bg-[#263548] hover:border-[#04D2D2]"
-                : "opacity-50 cursor-not-allowed"
-            }`}
+            className={`bg-[#1E293B] text-white px-3 py-1 rounded-lg transition-colors duration-300 border border-[#2A3A55] ${currentPage > 1
+              ? "hover:bg-[#263548] hover:border-[#04D2D2]"
+              : "opacity-50 cursor-not-allowed"
+              }`}
             onClick={goToPreviousPage}
             disabled={currentPage === 1}
           >
@@ -1406,11 +1458,10 @@ const AttackSurface = () => {
             {currentPage} of {totalPages || 1}
           </span>
           <button
-            className={`bg-[#1E293B] text-white px-3 py-1 rounded-lg transition-colors duration-300 border border-[#2A3A55] ${
-              currentPage < totalPages
-                ? "hover:bg-[#263548] hover:border-[#04D2D2]"
-                : "opacity-50 cursor-not-allowed"
-            }`}
+            className={`bg-[#1E293B] text-white px-3 py-1 rounded-lg transition-colors duration-300 border border-[#2A3A55] ${currentPage < totalPages
+              ? "hover:bg-[#263548] hover:border-[#04D2D2]"
+              : "opacity-50 cursor-not-allowed"
+              }`}
             onClick={goToNextPage}
             disabled={currentPage >= totalPages}
           >

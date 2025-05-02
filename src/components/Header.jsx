@@ -246,6 +246,8 @@ const Header = ({ isAsideCollapsed, setIsAsideCollapsed }) => {
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [darkMode, setDarkMode] = useState(true);
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState(null);
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
   const searchRef = useRef(null);
@@ -262,6 +264,20 @@ const Header = ({ isAsideCollapsed, setIsAsideCollapsed }) => {
     { id: 2, text: "System scan completed", time: "1 hour ago", read: false },
     { id: 3, text: "Weekly report is ready", time: "Yesterday", read: true },
   ];
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("auth_token");
+    const storedUser = localStorage.getItem("username");
+    const storedEmail = localStorage.getItem("useremail");
+
+    if (storedToken) {
+      setUser(storedUser);
+      setEmail(storedEmail);
+    } else {
+      setUser(null);
+      setEmail(null);
+    }
+  }, [])
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -336,16 +352,14 @@ const Header = ({ isAsideCollapsed, setIsAsideCollapsed }) => {
             initial={{ opacity: 0.8 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className={`logo transition-all duration-300 ease-in-out ${
-              isAsideCollapsed ? "py-3 px-3" : "py-1 px-16"
-            } border-e border-[#1E293B]`}
+            className={`logo transition-all duration-300 ease-in-out ${isAsideCollapsed ? "py-3 px-3" : "py-1 px-16"
+              } border-e border-[#1E293B]`}
           >
             <img
               src={isAsideCollapsed ? logosmall : logo}
               alt="Logo"
-              className={`transition-all duration-300 ${
-                isAsideCollapsed ? "w-12" : "w-24"
-              }`}
+              className={`transition-all duration-300 ${isAsideCollapsed ? "w-12" : "w-24"
+                }`}
             />
           </motion.div>
 
@@ -449,17 +463,15 @@ const Header = ({ isAsideCollapsed, setIsAsideCollapsed }) => {
                         <motion.div
                           key={notification.id}
                           whileHover={{ backgroundColor: "#0E1427" }}
-                          className={`px-4 py-3 border-b border-[#1E293B] cursor-pointer ${
-                            notification.read ? "" : "bg-[#0E1427]"
-                          }`}
+                          className={`px-4 py-3 border-b border-[#1E293B] cursor-pointer ${notification.read ? "" : "bg-[#0E1427]"
+                            }`}
                         >
                           <div className="flex justify-between">
                             <p
-                              className={`text-sm ${
-                                notification.read
+                              className={`text-sm ${notification.read
                                   ? "text-gray-400"
                                   : "text-white"
-                              }`}
+                                }`}
                             >
                               {notification.text}
                             </p>
@@ -522,8 +534,8 @@ const Header = ({ isAsideCollapsed, setIsAsideCollapsed }) => {
                   className="absolute right-0 mt-3 w-48 bg-[#040C1F] text-white border border-[#1E293B] shadow-lg rounded-md overflow-hidden"
                 >
                   <div className="px-4 py-3 border-b border-[#1E293B]">
-                    <p className="font-medium">User Name</p>
-                    <p className="text-xs text-gray-400">user@example.com</p>
+                    <p className="font-medium">{user}</p>
+                    <p className="text-xs text-gray-400">{email}</p>
                   </div>
                   <Link to={`/account`}>
                     <motion.button

@@ -508,6 +508,7 @@ import {
   User,
 } from "lucide-react";
 import apiInstance from "../../api/instance";
+import { Link } from "react-router-dom";
 
 const Dashboard_Main = () => {
 
@@ -627,7 +628,7 @@ const Dashboard_Main = () => {
         setIpCount(totalIp);
 
         // Count all technologies across all categories
-        const filteredTechReports = allReports.filter(report => report.tool === "Technologies_Report" || report.tool === "Technologies Report" )
+        const filteredTechReports = allReports.filter(report => report.tool === "Technologies_Report" || report.tool === "Technologies Report")
         let totalTech = 0;
         filteredTechReports.forEach(item => {
           const detectedTech = item?.rawData?.detected_technologies;
@@ -1036,46 +1037,52 @@ const Dashboard_Main = () => {
                   value: ipCount,
                   label: "IP ADDRESSES",
                   icon: <Server className="h-6 w-6" />,
+                  path: "/surface",
                 },
                 {
                   value: "2",
                   label: "HOSTNAMES",
                   icon: <Globe className="h-6 w-6" />,
+                  path: "/hostnames",
                 },
                 {
                   value: "0",
                   label: "PORTS",
                   icon: <Database className="h-6 w-6" />,
+                  path: "/ports",
                 },
                 {
                   value: "0",
                   label: "PROTOCOLS",
                   icon: <Activity className="h-6 w-6" />,
+                  path: "/protocols",
                 },
                 {
                   value: techCount,
                   label: "SERVICES",
                   icon: <Zap className="h-6 w-6" />,
+                  path: "/surface",
                 },
                 {
                   value: techCount,
                   label: "TECHNOLOGIES",
                   icon: <Shield className="h-6 w-6" />,
+                  path: "/surface",
                 },
               ].map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-[#040C1F] rounded-lg shadow-sm p-6 flex flex-col items-center justify-center transform transition-all duration-300 hover:shadow-[0px_0px_8px_#04D2D2] hover:bg-[#0a1935] cursor-pointer border border-[#1E293B]"
-                >
-                  <div className="text-[#04D2D2] mb-3">{item.icon}</div>
-                  <span className="text-3xl font-semibold text-[#04D2D2] mb-2">
-                    {item.value}
-                  </span>
-                  <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">
-                    {item.label}
-                  </span>
-                </div>
+                <Link to={item.path} key={index}>
+                  <div className="bg-[#040C1F] rounded-lg shadow-sm p-6 flex flex-col items-center justify-center transform transition-all duration-300 hover:shadow-[0px_0px_8px_#04D2D2] hover:bg-[#0a1935] cursor-pointer border border-[#1E293B]">
+                    <div className="text-[#04D2D2] mb-3">{item.icon}</div>
+                    <span className="text-3xl font-semibold text-[#04D2D2] mb-2">
+                      {item.value}
+                    </span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wider font-medium">
+                      {item.label}
+                    </span>
+                  </div>
+                </Link>
               ))}
+
             </div>
           </div>
 

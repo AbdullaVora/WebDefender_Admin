@@ -104,6 +104,7 @@ import Asset from "./pages/Dashboard/Asset";
 import AttackSurface from "./pages/Dashboard/AttackSurface";
 import { useEffect, useState } from "react";
 import logo2 from './assets/logo2.png';
+import ForgotPasswordFlow from "./pages/ForgotPasswordFlow";
 
 
 
@@ -134,6 +135,8 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPasswordFlow />} />
+        
 
         {/* Protected Routes (Wrapped with Layout) */}
         <Route element={<ProtectedRoute />}>

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
-import logo from '../../assets/logo.png';
+import logo from "../../assets/logo.png";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../store/slices/userSlice";
 import { useNavigate } from "react-router-dom";
-import logo2 from '../../assets/logo2.png';
+import logo2 from "../../assets/logo2.png";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,9 @@ const Login = () => {
     password: "",
   });
 
-  const { isAuthenticated, loading, error } = useSelector((state) => state.users);
+  const { isAuthenticated, loading, error } = useSelector(
+    (state) => state.users
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ const Login = () => {
 
   // Show loader whenever Redux loading state is true
   // No need for a separate loader state
-  
+
   useEffect(() => {
     if (!loading && isAuthenticated) {
       navigate("/dashboard", { replace: true });
@@ -44,16 +46,28 @@ const Login = () => {
         )}
 
         {/* Login Form */}
-        <div className={`${loading ? 'z-10' : 'z-30'} min-h-screen flex items-center justify-center px-4`}>
+        <div
+          className={`${
+            loading ? "z-10" : "z-30"
+          } min-h-screen flex items-center justify-center px-4`}
+        >
           <div className="max-w-md w-full my-10 space-y-8">
             <div className="flex justify-center">
               <img src={logo} alt="" className="w-30" />
             </div>
 
-            <div className={`bg-[#0A1A3B] rounded-xl p-8 shadow-2xl space-y-6 ${!loading ? 'backdrop-blur-3xl' : ''}`}>
+            <div
+              className={`bg-[#0A1A3B] rounded-xl p-8 shadow-2xl space-y-6 ${
+                !loading ? "backdrop-blur-3xl" : ""
+              }`}
+            >
               <div className="text-center">
-                <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-                <p className="text-gray-400">Enter your credentials to access your account</p>
+                <h2 className="text-3xl font-bold text-white mb-2">
+                  Welcome Back
+                </h2>
+                <p className="text-gray-400">
+                  Enter your credentials to access your account
+                </p>
               </div>
 
               {error && (
@@ -133,9 +147,12 @@ const Login = () => {
                       Remember me
                     </label>
                   </div>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="text-sm text-cyan-400 hover:text-cyan-300"
+                    onClick={() => {
+                      navigate("/forgot-password");
+                    }}
                   >
                     Forgot password?
                   </button>

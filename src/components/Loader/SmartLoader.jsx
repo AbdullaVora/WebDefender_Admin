@@ -59,6 +59,13 @@ const getLoaderConfig = (scanType) => {
                 estimatedDuration: 20000, // 1.5m
                 // longLoadMessage: "Scanning for technologies..."
             }
+        case 'WebsiteRecon':
+            return {
+                minDuration: 4000,     // 5s
+                maxDuration: 12000,    // 4m
+                estimatedDuration: 20000, // 1.5m
+                // longLoadMessage: "Scanning for technologies..."
+            }
         default:
             return {
                 minDuration: 5000,      // 5s

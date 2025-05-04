@@ -104,6 +104,7 @@ import Asset from "./pages/Dashboard/Asset";
 import AttackSurface from "./pages/Dashboard/AttackSurface";
 import { useEffect, useState } from "react";
 import logo2 from './assets/logo2.png';
+import WebReconScanner from "./pages/Dashboard/newScans/WebRecon";
 
 
 
@@ -282,6 +283,13 @@ function App() {
               element={
                 <Layout>
                   <CORS />
+                </Layout>
+              }
+            />
+            <Route path="/new-scan/website-Recon"
+              element={
+                <Layout>
+                  <WebReconScanner />
                 </Layout>
               }
             />

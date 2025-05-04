@@ -130,6 +130,7 @@ const Reports = () => {
         const target = report.results?.[0]?.target ||
           report.results?.[0]?.url ||
           report.results?.[0]?.domain ||
+          report.results?.[0]?.host ||
           report.url ||
           report.domain ||
           report.target ||
@@ -147,13 +148,14 @@ const Reports = () => {
           id: report._id || report.id || `RPT-${Math.random().toString(36).substr(2, 8)}`,
           tool: getToolName(reportType),
           status: getStatus(report, reportType),
-          timestamp: report.created_time,
+          timestamp: report.created_time || report.timestamp || new Date().toISOString(),
           duration: report.duration || `${Math.floor(Math.random() * 20) + 1}m ${Math.floor(Math.random() * 60)}s`,
           target: target,  // Use the extracted target
           findings: report.vulnerabilities ? report.vulnerabilities.length :
-            (report.issues ? report.issues.length :
-              (report.files ? report.files.length :
-                (report.results?.[0]?.subdomains ? report.results?.[0]?.subdomains.length : 0))),
+            report.issues ? report.issues.length :
+              report.files ? report.files.length :
+                report.results?.length ? report.results.length :
+                  report.results?.[0]?.subdomains ? report.results[0].subdomains.length : 0,
           severity: determineSeverity(report),
           details: generateDetails(report, reportType),
           rawData: report
@@ -178,17 +180,14 @@ const Reports = () => {
       EmailAudit_Report: "Email Security Auditor",
       Whois_Report: "Whois Lookup",  // Add this line
       Technologies_Report: "Technologies Report",
+      Cors_Report: "CORS Scanner",
     };
     return toolNames[reportType] || reportType;
   };
 
   const getStatus = (report, reportType) => {
     const statusMap = {
-      sql_reports: "success",
-      hidden_files: "success",
-      JsParser_Report: "success",
       EmailAudit_Report: "success",
-      Whois_Report: "success",  // Whois reports are always successful
     };
 
     if (reportType === "subdomain_reports") {
@@ -206,8 +205,23 @@ const Reports = () => {
         (report?.Status_Code ?? false);
       return allFieldsPresent ? "Passed" : "Failed";
     } else if (reportType === "Technologies_Report") {
-        const reportPresent = report?.detected_technologies ?? false;
-        return reportPresent ? "Passed" : "Failed";
+      const reportPresent = report?.detected_technologies ?? false;
+      return reportPresent ? "Passed" : "Failed";
+    } else if (reportType === "Cors_Report") {
+      const corsLength = report?.results?.length || 0;
+      return corsLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "Whois_Report") {
+      const whoisDataPresent = report?.data ?? false;
+      return whoisDataPresent ? "Passed" : "Failed";
+    } else if (reportType === "JsParser_Report") {
+      const jsIssuesLength = report?.results?.length || 0;
+      return jsIssuesLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "hidden_files") {
+      const hiddenFilesLength = report?.results?.length || 0;
+      return hiddenFilesLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "sql_reports") {
+      const sqlIssuesLength = report?.results?.length || 0;
+      return sqlIssuesLength > 0 ? "Passed" : "Failed";
     }
 
 
@@ -217,24 +231,41 @@ const Reports = () => {
 
   // Determine severity based on report content
   const determineSeverity = (report) => {
-    if (report.severity) return report.severity;
+    // If severity is directly specified, use that
+    if (report.severity || report.Server_Info?.severity) {
+      return (report.Server_Info?.severity || report.severity) === "info"
+        ? "Low"
+        : (report.Server_Info?.severity || report.severity);
+    }
 
+    // Handle reports with vulnerabilities array (like XSS, SQLi)
     if (report.vulnerabilities && report.vulnerabilities.length > 0) {
-      const hasCritical = report.vulnerabilities.some(v => v.severity === 'critical') || report.vulnerabilities.length > 70;
+      const hasCritical = report.vulnerabilities.some(v => v.severity === 'critical');
       if (hasCritical) return "Critical";
 
-      const hasHigh = report.vulnerabilities.some(v => v.severity === 'high') || report.vulnerabilities.length > 40;
+      const hasHigh = report.vulnerabilities.some(v => v.severity === 'high');
       if (hasHigh) return "High";
 
-      const hasMedium = report.vulnerabilities.some(v => v.severity === 'medium') || report.vulnerabilities.length > 20;
+      const hasMedium = report.vulnerabilities.some(v => v.severity === 'medium');
       if (hasMedium) return "Medium";
 
       return "Low";
     }
 
+    // Handle CORS reports which use results array
+    if (report.results && report.results.length > 0) {
+      const hasCritical = report.results.some(r => r.severity === 'critical');
+      const hasHigh = report.results.some(r => r.severity === 'high');
+      const hasMedium = report.results.some(r => r.severity === 'medium');
+
+      if (hasCritical) return "Critical";
+      if (hasHigh) return "High";
+      if (hasMedium) return "Medium";
+      if (report.results.length > 0) return "Low"; // Any result means at least low severity
+    }
+
     return "None";
   };
-
   // Generate details text based on report type
   const generateDetails = (report, reportType) => {
     switch (reportType) {
@@ -254,6 +285,8 @@ const Reports = () => {
         return `Email security audit results with ${report.issues ? report.issues.length : 0} findings`;
       case 'Whois_Report':
         return `Whois lookup results for ${report.data?.domain_name || 'unknown target'}`;
+      case 'Cors_Report':
+        return `CORS scan results with ${report.results ? report.results.length : 0} findings`;
       default:
         return "Security scan completed";
     }
@@ -297,100 +330,6 @@ const Reports = () => {
   };
 
 
-  // const downloadReport = (report, format = 'json') => {
-  //   console.log("Download button clicked", report.id, format); // Debug log
-
-  //   if (format === 'pdf') {
-  //     try {
-  //       const doc = new jsPDF('p', 'mm', 'a4');
-
-  //       // Set styles
-  //       doc.setFont('helvetica');
-  //       doc.setFontSize(16);
-  //       doc.setTextColor(0, 0, 0);
-
-  //       // Title
-  //       doc.text(`${report.tool} Report`, 105, 20, { align: 'center' });
-
-  //       // Report metadata
-  //       doc.setFontSize(12);
-  //       let y = 40;
-
-  //       const addMetadataLine = (label, value) => {
-  //         doc.text(`${label}: ${value}`, 20, y);
-  //         y += 8;
-  //       };
-
-  //       addMetadataLine('Report ID', report.id);
-  //       addMetadataLine('Target', report.target);
-  //       addMetadataLine('Date', new Date(report.timestamp).toLocaleString());
-  //       addMetadataLine('Status', report.status);
-  //       addMetadataLine('Severity', report.severity);
-  //       addMetadataLine('Findings', report.findings);
-
-  //       // Divider
-  //       y += 5;
-  //       doc.setDrawColor(200);
-  //       doc.line(20, y, 190, y);
-  //       y += 10;
-
-  //       // Findings header
-  //       doc.setFontSize(14);
-  //       doc.text('Findings Details:', 20, y);
-  //       y += 10;
-
-  //       // Handle large findings data
-  //       if (report.tool === 'Subdomain Scanner' && report.rawData?.results?.[0]?.subdomains) {
-  //         doc.setFontSize(10);
-
-  //         // Add subdomains in columns
-  //         const subdomains = report.rawData.results[0].subdomains;
-  //         const pageHeight = 280; // A4 height in mm
-  //         const col1X = 20;
-  //         const col2X = 105;
-  //         let col = col1X;
-
-  //         doc.text('Discovered Subdomains:', col, y);
-  //         y += 5;
-
-  //         for (const subdomain of subdomains) {
-  //           if (y > pageHeight) {
-  //             doc.addPage();
-  //             y = 20;
-  //             col = col === col1X ? col2X : col1X;
-  //           }
-
-  //           doc.text(`• ${subdomain}`, col, y);
-  //           y += 5;
-  //         }
-  //       } else {
-  //         // Generic findings display
-  //         doc.setFontSize(10);
-  //         const findingsText = report.details || 'No detailed findings available';
-  //         const splitText = doc.splitTextToSize(findingsText, 170);
-  //         doc.text(splitText, 20, y);
-  //       }
-
-  //       // Save PDF
-  //       doc.save(`${report.tool.replace(/\s+/g, '_')}_${report.id}.pdf`);
-
-  //     } catch (error) {
-  //       console.error('PDF generation error:', error);
-  //       alert('Failed to generate PDF: ' + error.message);
-  //     }
-  //   } if (format === 'json') {
-  //     console.log("Preparing JSON download...");
-  //     const cleanData = JSON.parse(JSON.stringify(report.rawData));
-  //     const dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(cleanData, null, 2))}`;
-
-  //     const downloadAnchor = document.createElement('a');
-  //     downloadAnchor.setAttribute('href', dataStr);
-  //     downloadAnchor.setAttribute('download', `${report.tool.replace(/\s+/g, '_')}_${report.id}.json`);
-  //     document.body.appendChild(downloadAnchor);
-  //     downloadAnchor.click();
-  //     document.body.removeChild(downloadAnchor);
-  //   }
-  // };
 
   const downloadReport = (report, format = 'json') => {
     // console.log("Download button clicked", report.id, format);
@@ -615,7 +554,8 @@ const Reports = () => {
         "WAF Detector": "Waf_Report",
         "JavaScript Analyzer": "JsParser_Report",
         "Email Security Auditor": "EmailAudit_Report",
-        "Whois Lookup": "Whois_Report"
+        "Whois Lookup": "Whois_Report",
+        "CORS Scanner": "Cors_Report",
       };
 
       // Group reports by type
@@ -677,6 +617,7 @@ const Reports = () => {
       'js': 'JsParser_Report',
       'email': 'EmailAudit_Report',
       'whois': 'Whois_Report',
+      'cors': 'Cors_Report',
 
       // Add any custom mappings needed
       [type.toLowerCase()]: type // Fallback to original if not mapped

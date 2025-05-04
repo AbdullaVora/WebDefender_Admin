@@ -14,7 +14,7 @@ import PageTitle from "../../components/PageTitle";
 
 const Scaner = () => {
   const dispatch = useDispatch();
-  const { scanResults, loading, status } = useSelector((state) => state.tools);
+    const { scanResults, loading, status } = useSelector((state) => state.tools);
 
   console.log("scanResults: ", scanResults);
 

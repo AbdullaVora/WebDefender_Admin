@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import apiInstance from "../../api/instance";
+import { setScanCount } from "./toolsSlice";
 
 const initialState = {
     loading: false,
@@ -61,7 +62,7 @@ export const login = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
     "auth/updateUser",
-    async (data, { rejectWithValue }) => {
+    async (data, { dispatch, rejectWithValue }) => {
         try {
             const token = localStorage.getItem("auth_token");
             const userId = localStorage.getItem("userId");
@@ -73,6 +74,8 @@ export const updateUser = createAsyncThunk(
             if (response.status === 200) {
                 localStorage.setItem("username", response.data.data.name);
                 localStorage.setItem("useremail", response.data.data.email);
+                const countResponse = await apiInstance.post(`/api/scanCounts`, { userId, scan_count: 0 });
+                dispatch(setScanCount(countResponse.data.scan_count));
                 return response.data;
             } else {
                 return rejectWithValue("Failed to update user data");

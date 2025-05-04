@@ -706,8 +706,8 @@ const AttackSurface = () => {
         const allReports = transformApiData(data);
         const wafReports = allReports.filter(report => report.tool === "WAF Detector");
         const techReport = allReports.filter(report => report.tool === "Technologies Scanner");
-        const ipReports = allReports.filter(report => report.tool !== "WAF Detector" && report.tool !== "Technologies Scanner");
-        console.log("IP Reports:", ipReports); // Debugging line
+        const ipReports = allReports.filter(report => report.tool === "WAF Detector" && report.tool === "Technologies Scanner");
+        console.log("IP Reports:", wafReports); // Debugging line
         setFilteredIPReports(wafReports);
         setFilteredItems(processWafReports(wafReports));
         setLoading(false);
@@ -892,15 +892,7 @@ const AttackSurface = () => {
         });
       }
 
-      // Determine vulnerability score based on status code
-      let vulnerabilityScore = "None";
-      if (rawData.Status_Code >= 500) {
-        vulnerabilityScore = "High";
-      } else if (rawData.Status_Code >= 400) {
-        vulnerabilityScore = "Medium";
-      } else if (rawData.Status_Code >= 200) {
-        vulnerabilityScore = "Low";
-      }
+      console.log(report); // Debugging line
 
       return {
         id: report.id,
@@ -912,7 +904,10 @@ const AttackSurface = () => {
         duration: report.duration || "Unknown",
         url: rawData.Target_URL ? `https://${rawData.Target_URL}` : "#",
         technologies,
-        vulnerabilityScore,
+        vulnerabilityScore: (report.rawData.Server_Info?.severity === "info" || report.rawData.severity === "info")
+          ? "Low"
+          : (report.rawData.Server_Info?.severity || report.rawData.severity)|| "None",
+
         status: report.status,
         rawData: report.rawData
       };
@@ -1309,11 +1304,11 @@ const AttackSurface = () => {
             <thead className="bg-[#0A1121] text-gray-400 text-sm">
               <tr>
                 <th className="px-4 py-3 text-left">IP Address</th>
+                <th className="px-4 py-3 text-left">HOSTNAME</th>
                 <th className="px-4 py-3 text-left">Location</th>
                 <th className="px-4 py-3 text-left">ISP/OS</th>
                 <th className="px-4 py-3 text-left">Status Code</th>
                 <th className="px-4 py-3 text-left">Protocol</th>
-                <th className="px-4 py-3 text-left">URL</th>
                 <th className="px-4 py-3 text-left">Technologies</th>
                 <th className="px-4 py-3 text-left">Risk</th>
                 <th className="px-4 py-3 text-left">Status</th>
@@ -1340,10 +1335,6 @@ const AttackSurface = () => {
                         {item.ipAddress}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-300">{item.location}</td>
-                    <td className="px-4 py-3 text-gray-300">{item.os}</td>
-                    <td className="px-4 py-3 text-gray-300">{item.port}</td>
-                    <td className="px-4 py-3 text-gray-300">{item.protocol}</td>
                     <td className="px-4 py-3">
                       <a
                         href={item.url}
@@ -1355,6 +1346,13 @@ const AttackSurface = () => {
                         <ExternalLink size={14} />
                       </a>
                     </td>
+                    <td className="px-4 py-3 text-gray-300">{item.location}</td>
+                    <td className="px-4 py-3 text-gray-300">{item.os}</td>
+                    <td className="px-4 py-3 text-gray-300">
+                      {item.status === "Passed" ? "200" : "404"}
+                    </td>
+
+                    <td className="px-4 py-3 text-gray-300">{item.protocol}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-2">
                         {item.technologies.slice(0, 3).map((tech, idx) => (
@@ -1395,7 +1393,9 @@ const AttackSurface = () => {
                           ? "bg-red-900 text-red-300"
                           : item.vulnerabilityScore === "Medium"
                             ? "bg-yellow-900 text-yellow-300"
-                            : "bg-green-900 text-green-300"
+                            : item.vulnerabilityScore === "Low"
+                              ? "bg-blue-900 text-green-300"
+                              : "bg-green-900 text-green-300"
                           }`}
                       >
                         {item.vulnerabilityScore}

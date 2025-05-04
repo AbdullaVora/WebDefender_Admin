@@ -509,9 +509,20 @@ import {
 } from "lucide-react";
 import apiInstance from "../../api/instance";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setScanCount } from "../../store/slices/toolsSlice";
 
 const Dashboard_Main = () => {
 
+  const [userId, setUserId] = useState(null);
+  // const [scanCount, setScanCount] = useState(0);
+  const [reportLength, setReportLength] = useState(0);
+  const dispatch = useDispatch()
+  const [totalPassed, setTotalPassed] = useState(0)
+  const [totalFailed, setTotalFailed] = useState(0)
+
+  const { counts, loading, status } = useSelector((state) => state.tools);
+  // console.log("Counts of scans:", counts); // Debugging line
 
   useEffect(() => {
     const welcomeShown = localStorage.getItem('welcome_shown');
@@ -537,11 +548,11 @@ const Dashboard_Main = () => {
   // State for scan data with more realistic initial values
   const [scanData, setScanData] = useState({
     scannedAssets: {
-      completed: 3,
-      total: 5,
+      failed: 5,
+      completed: 10,
     },
     runningScans: {
-      active: 1,
+      active: counts,
       total: 2,
     },
     recentEvents: [
@@ -581,9 +592,9 @@ const Dashboard_Main = () => {
 
   // For time display
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [userId, setUserId] = useState(null);
   const [ipCount, setIpCount] = useState(0);
   const [techCount, setTechCount] = useState(0);
+  const [host, setHost] = useState(0)
 
   useEffect(() => {
     const id = localStorage.getItem("userId");
@@ -600,22 +611,136 @@ const Dashboard_Main = () => {
   }, []);
 
   // Fetch data from API
+  // useEffect(() => {
+  //   if (!userId) return; // 🚫 Skip if userId isn't ready
+
+  //   const fetchScanCount = async () => {
+  //     const response = await apiInstance.get(`/api/getscanCounts/${userId}`)
+  //     if (response.status === 201) {
+  //       dispatch(setScanCount(response.data.scan_count))
+  //     } else {
+  //       console.error("Error fetching scan count:", response.statusText);
+  //       // setScanCount(0); // Set to 0 if there's an error
+  //     }
+  //   }
+
+  //   const fetchReports = async () => {
+  //     try {
+  //       // setLoading(true);
+  //       const response = await apiInstance.get('/api/reports', {
+  //         params: {
+  //           userId
+  //         }
+  //       });
+  //       const data = response.data;
+  //       setReportLength(data.length); // Set the report length
+  //       // setApiData(data);
+
+  //       const allReports = transformApiData(data);
+  //       console.log("All reports:", allReports); // Debugging line
+  //       const filteredIPReports = allReports.filter(report => report.tool === "WAF Detector");
+
+  //       //count ip address
+  //       let totalIp = 0;
+  //       filteredIPReports.forEach(item => {
+  //         const ip = item?.rawData?.IP_Information?.IPAddress;
+  //         if (ip) totalIp += 1;
+  //       });
+  //       setIpCount(totalIp);
+
+  //       let totalHost = 0;
+
+  //       allReports.forEach(item => {
+  //         const host = item?.rawData?.results?.domain ||
+  //           item?.rawData?.results?.url ||
+  //           item?.rawData?.scan_info?.target ||
+  //           item?.rawData?.targets?.[0] ||
+  //           item?.rawData?.target ||
+  //           item?.rawData?.domain ||
+  //           item?.rawData?.website;
+
+  //         if (host) totalHost += 1;
+  //       });
+
+  //       setHost(totalHost)
+
+
+  //       // Count all technologies across all categories
+  //       const filteredTechReports = allReports.filter(report => report.tool === "Technologies_Report" || report.tool === "Technologies Report")
+  //       let totalTech = 0;
+  //       filteredTechReports.forEach(item => {
+  //         const detectedTech = item?.rawData?.detected_technologies;
+  //         if (detectedTech) {
+  //           // Sum up technologies from all categories
+  //           Object.values(detectedTech).forEach(category => {
+  //             if (Array.isArray(category)) {
+  //               totalTech += category.length;
+  //             }
+  //           });
+  //         }
+  //       });
+  //       setTechCount(totalTech);
+  //       // setLoading(false);
+  //     } catch (error) {
+  //       console.error("Error fetching reports:", error);
+  //       // setLoading(false);
+  //     }
+  //   };
+
+  //   fetchScanCount();
+  //   fetchReports();
+  // }, [userId]); // ✅ Trigger this effect only after userId is set
+
+  useEffect(() => {
+    setScanData(prev => ({
+      ...prev,
+      scannedAssets: {
+        failed: totalFailed,
+        completed: totalPassed,
+      }
+    }));
+  }, [totalPassed, totalFailed]);
+
   useEffect(() => {
     if (!userId) return; // 🚫 Skip if userId isn't ready
 
+    const fetchScanCount = async () => {
+      const response = await apiInstance.get(`/api/getscanCounts/${userId}`)
+      if (response.status === 201) {
+        dispatch(setScanCount(response.data.scan_count))
+      } else {
+        console.error("Error fetching scan count:", response.statusText);
+      }
+    }
+
     const fetchReports = async () => {
       try {
-        // setLoading(true);
         const response = await apiInstance.get('/api/reports', {
           params: {
             userId
           }
         });
         const data = response.data;
-        // setApiData(data);
+        setReportLength(data.length); // Set the report length
 
         const allReports = transformApiData(data);
         console.log("All reports:", allReports); // Debugging line
+
+        // Calculate passed and failed scans
+        let passed = 0;
+        let failed = 0;
+
+        allReports.forEach(report => {
+          if (report.status === "Passed" || report.status === "success") {
+            passed++;
+          } else if (report.status === "Failed") {
+            failed++;
+          }
+        });
+
+        setTotalPassed(passed);
+        setTotalFailed(failed);
+
         const filteredIPReports = allReports.filter(report => report.tool === "WAF Detector");
 
         //count ip address
@@ -624,8 +749,21 @@ const Dashboard_Main = () => {
           const ip = item?.rawData?.IP_Information?.IPAddress;
           if (ip) totalIp += 1;
         });
-
         setIpCount(totalIp);
+
+        let totalHost = 0;
+        allReports.forEach(item => {
+          const host = item?.rawData?.results?.domain ||
+            item?.rawData?.results?.url ||
+            item?.rawData?.scan_info?.target ||
+            item?.rawData?.targets?.[0] ||
+            item?.rawData?.target ||
+            item?.rawData?.domain ||
+            item?.rawData?.website;
+
+          if (host) totalHost += 1;
+        });
+        setHost(totalHost);
 
         // Count all technologies across all categories
         const filteredTechReports = allReports.filter(report => report.tool === "Technologies_Report" || report.tool === "Technologies Report")
@@ -642,13 +780,12 @@ const Dashboard_Main = () => {
           }
         });
         setTechCount(totalTech);
-        // setLoading(false);
       } catch (error) {
         console.error("Error fetching reports:", error);
-        // setLoading(false);
       }
     };
 
+    fetchScanCount();
     fetchReports();
   }, [userId]); // ✅ Trigger this effect only after userId is set
 
@@ -714,13 +851,48 @@ const Dashboard_Main = () => {
     return toolNames[reportType] || reportType;
   };
 
+  // const getStatus = (report, reportType) => {
+  //   const statusMap = {
+  //     sql_reports: "success",
+  //     hidden_files: "success",
+  //     JsParser_Report: "success",
+  //     EmailAudit_Report: "success",
+  //     Whois_Report: "success",  // Whois reports are always successful
+  //   };
+
+  //   if (reportType === "subdomain_reports") {
+  //     const subdomainLength = report?.results?.[0]?.subdomains?.length || 0;
+  //     return subdomainLength > 0 ? "Passed" : "Failed";
+  //   } else if (reportType === "Xss_Report") {
+  //     const xssLength = report?.vulnerabilities?.length || 0;
+  //     return xssLength > 0 ? "Passed" : "Failed";
+  //   } else if (reportType === "Waf_Report") {
+  //     const allFieldsPresent =
+  //       (report?.IP_Information ?? false) &&
+  //       (report?.WAF_Detection_Result ?? false) &&
+  //       (report?.Server ?? false) &&
+  //       (report?.Protection_Methods ?? false) &&
+  //       (report?.Status_Code ?? false);
+
+  //     console.log("waf", allFieldsPresent);
+
+  //     return allFieldsPresent ? "Passed" : "Failed";
+  //   }
+
+
+
+  //   return statusMap[reportType] || "unknown";
+  // };
+
+  // Determine severity based on report content
+
   const getStatus = (report, reportType) => {
     const statusMap = {
-      sql_reports: "success",
-      hidden_files: "success",
-      JsParser_Report: "success",
-      EmailAudit_Report: "success",
-      Whois_Report: "success",  // Whois reports are always successful
+      sql_reports: "Passed",
+      hidden_files: "Passed",
+      JsParser_Report: "Passed",
+      EmailAudit_Report: "Passed",
+      Whois_Report: "Passed",
     };
 
     if (reportType === "subdomain_reports") {
@@ -736,18 +908,12 @@ const Dashboard_Main = () => {
         (report?.Server ?? false) &&
         (report?.Protection_Methods ?? false) &&
         (report?.Status_Code ?? false);
-
-      console.log("waf", allFieldsPresent);
-
       return allFieldsPresent ? "Passed" : "Failed";
     }
 
-
-
-    return statusMap[reportType] || "unknown";
+    return statusMap[reportType] || "Failed"; // Default to Failed if unknown
   };
 
-  // Determine severity based on report content
   const determineSeverity = (report) => {
     if (report.severity) return report.severity;
 
@@ -793,8 +959,7 @@ const Dashboard_Main = () => {
 
   // Calculate percentages for the circle graphs
   const scannedPercentage =
-    (scanData.scannedAssets.completed / scanData.scannedAssets.total) * 100 ||
-    0;
+    (scanData.scannedAssets.completed / scanData.scannedAssets.failed) || 0;
   const runningPercentage =
     (scanData.runningScans.active / scanData.runningScans.total) * 100 || 0;
 
@@ -1040,10 +1205,10 @@ const Dashboard_Main = () => {
                   path: "/surface",
                 },
                 {
-                  value: "2",
+                  value: host,
                   label: "HOSTNAMES",
                   icon: <Globe className="h-6 w-6" />,
-                  path: "/hostnames",
+                  path: "/surface",
                 },
                 {
                   value: "0",
@@ -1089,6 +1254,62 @@ const Dashboard_Main = () => {
           {/* Scan Activity */}
           <div className="grid grid-cols-3 gap-6 mb-8">
             {/* Scanned Assets */}
+            {/* <div className="bg-[#040C1F] rounded-lg p-6 shadow-md border border-[#1E293B] transform transition-all duration-300 hover:shadow-[0px_0px_8px_#04D2D2] hover:border-[#04D2D2]">
+              <div className="flex items-center mb-4">
+                <Shield className="h-5 w-5 text-blue-500 mr-2" />
+                <span className="text-md font-medium text-[#04D2D2]">
+                  Scanned Assets
+                </span>
+              </div>
+
+              <div className="flex justify-center">
+                <div className="relative w-36 h-36">
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="none"
+                      stroke="#2A3042"
+                      strokeWidth="10"
+                    />
+
+                    
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="none"
+                      stroke="#3B82F6"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray={scannedDashArray}
+                      transform="rotate(-90 50 50)"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-4xl font-light text-blue-500">
+                      {scanData.scannedAssets.completed}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      / {scanData.scannedAssets.failed}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 text-center">
+                <span className="text-xs text-gray-400">
+                  Last scan completed 5 hours ago
+                </span>
+                <button className="mt-3 w-full py-2 bg-[#1A2335] text-[#04D2D2] rounded text-sm hover:bg-[#253247] transition-colors duration-200">
+                  View Assets
+                </button>
+              </div>
+            </div> */}
+
+            {/* Scanned Assets */}
             <div className="bg-[#040C1F] rounded-lg p-6 shadow-md border border-[#1E293B] transform transition-all duration-300 hover:shadow-[0px_0px_8px_#04D2D2] hover:border-[#04D2D2]">
               <div className="flex items-center mb-4">
                 <Shield className="h-5 w-5 text-blue-500 mr-2" />
@@ -1109,8 +1330,7 @@ const Dashboard_Main = () => {
                       stroke="#2A3042"
                       strokeWidth="10"
                     />
-
-                    {/* Progress circle */}
+                    {/* Progress circle - now showing passed/failed ratio */}
                     <circle
                       cx="50"
                       cy="50"
@@ -1119,25 +1339,32 @@ const Dashboard_Main = () => {
                       stroke="#3B82F6"
                       strokeWidth="10"
                       strokeLinecap="round"
-                      strokeDasharray={scannedDashArray}
+                      strokeDasharray={`${(totalPassed / (totalPassed + totalFailed)) * 283} 283`}
                       transform="rotate(-90 50 50)"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-light text-blue-500">
-                      {scanData.scannedAssets.completed}
+                    <span className="text-4xl font-light text-blue-500">
+                      {totalPassed}
                     </span>
                     <span className="text-sm text-gray-400">
-                      / {scanData.scannedAssets.total}
+                      / {totalPassed + totalFailed}
                     </span>
                   </div>
                 </div>
               </div>
 
               <div className="mt-4 text-center">
-                <span className="text-xs text-gray-400">
-                  Last scan completed 5 hours ago
-                </span>
+                <div className="flex justify-center space-x-4">
+                  <div className="flex items-center">
+                    <div className="h-2 w-2 bg-blue-500 rounded-full mr-1"></div>
+                    <span className="text-xs text-gray-400">Passed</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="h-2 w-2 bg-gray-500 rounded-full mr-1"></div>
+                    <span className="text-xs text-gray-400">Failed</span>
+                  </div>
+                </div>
                 <button className="mt-3 w-full py-2 bg-[#1A2335] text-[#04D2D2] rounded text-sm hover:bg-[#253247] transition-colors duration-200">
                   View Assets
                 </button>
@@ -1145,7 +1372,7 @@ const Dashboard_Main = () => {
             </div>
 
             {/* Running Scans */}
-            <div className="bg-[#040C1F] rounded-lg p-6 shadow-md border border-[#1E293B] transform transition-all duration-300 hover:shadow-[0px_0px_8px_#04D2D2] hover:border-[#04D2D2]">
+            {/* <div className="bg-[#040C1F] rounded-lg p-6 shadow-md border border-[#1E293B] transform transition-all duration-300 hover:shadow-[0px_0px_8px_#04D2D2] hover:border-[#04D2D2]">
               <div className="flex items-center mb-4">
                 <Activity className="h-5 w-5 text-green-500 mr-2" />
                 <span className="text-md font-medium text-[#04D2D2]">
@@ -1156,7 +1383,7 @@ const Dashboard_Main = () => {
               <div className="flex justify-center">
                 <div className="relative w-36 h-36">
                   <svg className="w-full h-full" viewBox="0 0 100 100">
-                    {/* Background circle */}
+                   
                     <circle
                       cx="50"
                       cy="50"
@@ -1166,7 +1393,6 @@ const Dashboard_Main = () => {
                       strokeWidth="10"
                     />
 
-                    {/* Progress circle */}
                     <circle
                       cx="50"
                       cy="50"
@@ -1194,6 +1420,68 @@ const Dashboard_Main = () => {
                 <span className="text-xs text-gray-400">
                   Scan in progress (65% complete)
                 </span>
+                <button className="mt-3 w-full py-2 bg-[#1A2335] text-[#04D2D2] rounded text-sm hover:bg-[#253247] transition-colors duration-200">
+                  View Scan Details
+                </button>
+              </div>
+            </div> */}
+
+            {/* Running Scans */}
+            <div className="bg-[#040C1F] rounded-lg p-6 shadow-md border border-[#1E293B] transform transition-all duration-300 hover:shadow-[0px_0px_8px_#04D2D2] hover:border-[#04D2D2]">
+              <div className="flex items-center mb-4">
+                <Activity className="h-5 w-5 text-green-500 mr-2" />
+                <span className="text-md font-medium text-[#04D2D2]">
+                  Running Scans
+                </span>
+              </div>
+
+              <div className="flex justify-center">
+                <div className="relative w-36 h-36">
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    {/* Background circle */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="none"
+                      stroke="#2A3042"
+                      strokeWidth="10"
+                    />
+                    {/* Progress circle - showing active/total ratio */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="45"
+                      fill="none"
+                      stroke="#10B981"
+                      strokeWidth="10"
+                      strokeLinecap="round"
+                      strokeDasharray={`${(counts / scanData.runningScans.total) * 283} 283`}
+                      transform="rotate(-90 50 50)"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-light text-green-500">
+                      {counts}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      / {scanData.runningScans.total}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 text-center">
+                <div className="flex justify-center space-x-4">
+                  <div className="flex items-center">
+                    <div className="h-2 w-2 bg-green-500 rounded-full mr-1"></div>
+                    <span className="text-xs text-gray-400">Active</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="h-2 w-2 bg-gray-500 rounded-full mr-1"></div>
+                    <span className="text-xs text-gray-400">Total</span>
+                  </div>
+                </div>
                 <button className="mt-3 w-full py-2 bg-[#1A2335] text-[#04D2D2] rounded text-sm hover:bg-[#253247] transition-colors duration-200">
                   View Scan Details
                 </button>
@@ -1246,7 +1534,7 @@ const Dashboard_Main = () => {
           </div>
 
           {/* Latest Scans */}
-          <div>
+          {/* <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <Clock className="h-5 w-5 text-green-400 mr-2" />
@@ -1326,7 +1614,7 @@ const Dashboard_Main = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

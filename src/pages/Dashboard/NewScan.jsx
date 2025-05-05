@@ -346,27 +346,27 @@ const NewScan = () => {
     {
       category: 'Web scans',
       tools: [
-        { id: 'website-technologies-scanner', link: "/new-scan/technologiesScan", name: 'Website Technologies Scanner', description: 'Scanning Website and find using technologies', icon: '🌐' },
-        { id: 'google-hacking', link: "/new-scan/google-hacking", name: 'Google Hacking', description: 'Find online footprints of a target through search engines', icon: '🔍' }
+        { id: 'website-recon', link: "/new-scan/website-Recon", name: 'Website Recon', description: 'Fingerprint web technologies of target websites', icon: '🔎' },
+        { id: 'google-hacking', link: "/new-scan/google-hacking", name: 'Google Hacking', description: 'Find online footprints of a target search engines', icon: '🔍' }
       ]
     },
     {
       category: 'Network & Cloud scans',
       tools: [
         { id: 'CORS Scanner', link: "/new-scan/CORS", name: 'CORS Scanner', description: 'Scan CORS in website and find security level', icon: '📶' },
-        { id: 'domain-finder', link: "/domain-finder", name: 'Domain Finder', description: 'Find online footprints of target\'s domain names', icon: '🌐' },
+        { id: 'domain-finder', link: "/tools/Subdomain-Reconnaissance/scan", name: 'Domain Finder', description: 'Find online footprints of target\'s domain names', icon: '🌐' },
         { id: 'emailAudit', link: "/new-scan/emailAudit", name: 'Secure Email Audit', description: 'Scan the secure email audit', icon: '💻' },
-        { id: 'port-scanner', link: "/port-scanner", name: 'Port Scanner', description: 'Detect open ports and fingerprint services', icon: '🔌' }
+        // { id: 'port-scanner', link: "/port-scanner", name: 'Port Scanner', description: 'Detect open ports and fingerprint services', icon: '🔌' }
       ]
     },
     {
       category: 'Discovery tools',
       tools: [
-        { id: 'website-recon', link: "/new-scan/website-Recon", name: 'Website Recon', description: 'Fingerprint web technologies of target websites', icon: '🔎' },
-        { id: 'url-fuzzer', link: "/url-fuzzer", name: 'URL Fuzzer', description: 'Discover hidden files and directories', icon: '📁' },
+        { id: 'website-technologies-scanner', link: "/new-scan/technologiesScan", name: 'Website Technologies Scanner', description: 'Scanning Website and find using technologies', icon: '🌐' },
+        // { id: 'url-fuzzer', link: "/url-fuzzer", name: 'URL Fuzzer', description: 'Discover hidden files and directories', icon: '📁' },
         { id: 'JSParser', link: "/new-scan/JSParser", name: 'JS Parser', description: 'Scanning and find the js files from website', icon: '🛡️' },
         { id: 'WHOIS-Scanner', link: "/new-scan/whois", name: 'WHOIS SCANNER', description: 'Discover WHOIS Scan Website', icon: '📊' },
-        { id: 'people-hunter', link: "/people-hunter", name: 'People Hunter', description: 'Research email addresses and social media profiles', icon: '👤' }
+        // { id: 'people-hunter', link: "/people-hunter", name: 'People Hunter', description: 'Research email addresses and social media profiles', icon: '👤' }
       ]
     }
   ];
@@ -433,7 +433,7 @@ const NewScan = () => {
           </div>
         );
 
-      case 'reuse-tools':
+      case 'recon-tools':
         return (
           <div>
             <h2 className="text-lg text-[#04D2D2] font-medium mb-4">Recent Scans</h2>

@@ -44,6 +44,7 @@ import { ArrowRight, Shield, ExternalLink } from 'lucide-react';
 const ToolBox = ({ title, description, subtool, icon }) => {
   const navigate = useNavigate();
 
+
   const onNavigate = () => {
     if (subtool === 'true') {
       navigate(`/tools/${encodeURIComponent(title.replace(/\s+/g, ''))}`);

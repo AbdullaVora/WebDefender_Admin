@@ -155,6 +155,7 @@ const Reports = () => {
             report.issues ? report.issues.length :
               report.files ? report.files.length :
                 report.results?.length ? report.results.length :
+                  // report[0].merged_data.length ? report[0].merged_data.length : 
                   report.results?.[0]?.subdomains ? report.results[0].subdomains.length : 0,
           severity: determineSeverity(report),
           details: generateDetails(report, reportType),
@@ -181,11 +182,13 @@ const Reports = () => {
       Whois_Report: "Whois Lookup",  // Add this line
       Technologies_Report: "Technologies Report",
       Cors_Report: "CORS Scanner",
+      WebReconScans: "WebRecon Scan"
     };
     return toolNames[reportType] || reportType;
   };
 
   const getStatus = (report, reportType) => {
+    console.log(reportType)
     const statusMap = {
       EmailAudit_Report: "success",
     };
@@ -211,7 +214,7 @@ const Reports = () => {
       const corsLength = report?.results?.length || 0;
       return corsLength > 0 ? "Passed" : "Failed";
     } else if (reportType === "Whois_Report") {
-      const whoisDataPresent = report?.data ?? false;
+      const whoisDataPresent = report?.results ?? false;
       return whoisDataPresent ? "Passed" : "Failed";
     } else if (reportType === "JsParser_Report") {
       const jsIssuesLength = report?.results?.length || 0;
@@ -222,7 +225,13 @@ const Reports = () => {
     } else if (reportType === "sql_reports") {
       const sqlIssuesLength = report?.results?.length || 0;
       return sqlIssuesLength > 0 ? "Passed" : "Failed";
+    } else if (reportType === "WebReconScans") {
+      let mergedData = Array.isArray(report) ? report[0]?.merged_data : report?.merged_data;
+      const webReconPresent = mergedData && Object.keys(mergedData).length > 0;
+      return webReconPresent ? "Passed" : "Failed";
     }
+
+
 
 
 

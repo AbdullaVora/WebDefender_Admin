@@ -44,13 +44,6 @@ const JSParser = () => {
             });
         } else if (results.length > 0) {
             setShowDummyMessage(false);
-        } else {
-            setDummyMessage({
-                title: "Welcome to JS Parser Scanner",
-                content: "Enter a target URL above to begin scanning for JS Parser vulnerabilities.",
-                icon: <FiSearch className="w-12 h-12 mb-4" style={{ color: '#04D2D2' }} />,
-                color: 'text-gray-300'
-            });
         }
     }, [isScanning, error, results]);
 

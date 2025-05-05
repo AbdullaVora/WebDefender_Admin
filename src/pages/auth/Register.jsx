@@ -28,8 +28,12 @@ const Register = () => {
       return;
     }
 
-    dispatch(register(formData));
-    console.log("Signup submitted:", formData);
+    dispatch(register(formData)).then(() => {
+      navigate("/dashboard", { replace: true });
+      console.log("Signup submitted:", formData);
+    }).catch((err) => {
+      console.log(error.message)
+    })
   };
 
   useEffect(() => {

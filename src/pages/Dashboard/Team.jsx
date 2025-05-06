@@ -1,14 +1,16 @@
 import React from "react";
 import { Github, Linkedin, Twitter, Mail, Globe } from "lucide-react";
 import PageTitle from "../../components/PageTitle";
+import abdulla from "../../assets/20607.jpg" 
+import kaif from "../../assets/kaifPF.jpg" 
 
 const Team = () => {
   const teamMembers = [
     {
-      name: "Alex Morgan",
+      name: "KAIF SHAH",
       role: "Lead Developer",
       bio: "Cybersecurity specialist focused on penetration testing and vulnerability assessment. Conference speaker and open-source contributor.",
-      avatar: "/api/placeholder/400/400",
+      avatar: kaif,
       social: {
         github: "https://github.com/alexmorgan",
         linkedin: "https://linkedin.com/in/alexmorgan",
@@ -19,16 +21,27 @@ const Team = () => {
     {
       name: "Kalpesh Gupta",
       role: "Full Stack Developer",
-      bio: "Full-stack developer with 8+ years of experience in React and Node.js. Passionate about cybersecurity and building robust applications.",
+      bio: "Full-stack developer with 2+ years of experience in React and Node.js. Passionate about cybersecurity and building robust applications.",
       avatar: "/KalpeshGupta.jpg",
       social: {
-        github: "https://github.com/sarahchen",
-        linkedin: "https://linkedin.com/in/sarahchen",
+        github: "https://github.com/Kalpeshji",
+        linkedin: "https://www.linkedin.com/in/kalpesh-gupta-%F0%9F%A5%87-a9a62b251?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3B3veUwNXaRp25uGpVfMb4qw%3D%3D",
         website: "https://sarahchen.dev",
       },
     },
     {
-      name: "Michael Rodriguez",
+      name: "ABDULLA VORA",
+      role: "Full Stack Developer",
+      bio: "Full-stack developer with 1.2+ years of experience in React and Node.js. Passionate about cybersecurity and building robust applications.",
+      avatar: abdulla,
+      social: {
+        github: "https://github.com/AbdullaVora",
+        linkedin: "https://www.linkedin.com/in/abdulla-vora-820872336?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_view_base_contact_details%3BHdpTGggySxaldD1ycawRZg%3D%3D",
+        email: "jamie@example.com",
+      },
+    },
+    {
+      name: "ARPIT PATEL",
       role: "UI/UX Designer",
       bio: "Designer with a keen eye for creating intuitive user interfaces. Blends aesthetics with functionality to create seamless user experiences.",
       avatar: "/api/placeholder/400/400",
@@ -36,17 +49,6 @@ const Team = () => {
         twitter: "https://twitter.com/michaelr",
         linkedin: "https://linkedin.com/in/michaelr",
         website: "https://michaelr.design",
-      },
-    },
-    {
-      name: "Jamie Wilson",
-      role: "DevOps Engineer",
-      bio: "Infrastructure specialist with expertise in cloud technologies. Ensures smooth deployment and operation of all our tools.",
-      avatar: "/api/placeholder/400/400",
-      social: {
-        github: "https://github.com/jamiewilson",
-        linkedin: "https://linkedin.com/in/jamiewilson",
-        email: "jamie@example.com",
       },
     },
   ];
